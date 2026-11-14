@@ -2,7 +2,7 @@
 
 - **Canvas:** https://claude.ai/artifact/SC6sy1LSeAbKuxzn9bMB6r. Two pages: **Screens** and **Flows**.
 - **Design system:** https://claude.ai/code/artifact/27b3f5be-41a4-4456-a3e1-a2ebb433b43d. Its README, tokens and component guidelines are the rules for color, type, spacing, wording, icons and components.
-- **Status:** every screen and flow is designed, at 390 px and 1280 px, in light (dark is shown on the two "Search · dark" boards). Waiting for the owner's final review.
+- **Status:** every screen and flow is designed, at 390 px and 1280 px, in light (dark is shown on the two "Search · dark" boards). Reviewed and signed off on 2026-11-14.
 - **Language:** American English. Dates are month first ("Nov 3"); times are 12-hour ("6:40 PM").
 
 ## Visual direction: "Hearth & Home"
@@ -147,15 +147,7 @@ Cream background, terracotta for the main action, olive for the second action, g
 - The boards were checked by reading their markup, not by looking at them rendered.
 
 ## Notes for Phase 3 (code, not design)
-These go into the repo's `CLAUDE.md`.
-- A "Skip to content" link, and focus moved to the page content after navigation.
-- After a failed submit, focus the first invalid field; errors are announced to screen readers.
-- `autocomplete` attributes on login and sign-up fields; password managers and paste allowed. Email fields use `type="email"`.
-- Icon-only buttons have an accessible name ("More actions for Sara", "Cancel invitation to John").
-- Search waits a moment after typing before it queries.
-- Motion is short and is switched off under `prefers-reduced-motion`.
-- Dates show the year when it isn't the current year.
-- "Undo" after archiving restores the item to the place it was in.
+They are now in `.ai/guidelines/ui.md`, which Boost copies into `CLAUDE.md`.
 
 ## Sample data used in the mockups
 - Where each item is: Spare house keys in Drawer 1 · Medal in John's room · Passport folder in Blue box · Camera charger and Board games in TV stand · Drill and Winter blankets in Shelf A.

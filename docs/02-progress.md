@@ -1,7 +1,7 @@
 # Progress
 
 **Current phase:** 3 (Implement)
-**Next step:** finish the first Phase 3 step: copy the rest of the docs (`docs/phase-1/`, `docs/phase-2/`) into the repo, finish `CLAUDE.md`, then make the first commit.
+**Next step:** finalize the data model details (see "To check at the start of Phase 3" in `docs/phase-1/data-model.md`).
 
 ## Phase 1: Plan
 - [x] Set up project docs and workflow (2026-11-10)
@@ -24,7 +24,7 @@
 - [x] Phase 2 sign-off (2026-11-14)
 
 ## Phase 3: Implement
-- [ ] Create the repo from `amyavari/laravel-skeleton-strict-configs`, copy `docs/` into it, write `CLAUDE.md` (include "Notes for Phase 3" in `docs/phase-2/design.md` and the American English rule)
+- [x] Create the repo from `amyavari/laravel-skeleton-strict-configs`, copy `docs/` into it, write `CLAUDE.md` (include "Notes for Phase 3" in `docs/phase-2/design.md` and the American English rule) (2026-11-14)
 - [ ] Finalize the data model details (see "To check at the start of Phase 3" in `data-model.md`)
 - [ ] Add a PostgreSQL job to CI next to SQLite
 - [ ] Features in the order set in Phase 1 (each one with Pest tests, and passing `composer test`)
