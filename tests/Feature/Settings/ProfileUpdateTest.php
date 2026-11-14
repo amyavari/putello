@@ -2,32 +2,39 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Settings\DeleteUserForm;
 use App\Livewire\Settings\Profile;
 use App\Models\User;
+use Livewire\Livewire;
 
-use function Pest\Livewire\livewire;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertAuthenticatedAs;
+use function Pest\Laravel\assertGuest;
+use function Pest\Laravel\assertModelExists;
+use function Pest\Laravel\assertModelMissing;
+use function Pest\Laravel\post;
 
 test('profile page is displayed', function (): void {
-    $this->actingAs($user = User::factory()->create());
+    $user = User::factory()->create();
 
-    $this->get('/settings/profile')->assertOk();
+    actingAs($user)
+        ->get(route('profile.edit'))
+        ->assertOk()
+        /** @phpstan-ignore method.notFound (a Livewire macro on TestResponse) */
+        ->assertSeeLivewire(Profile::class);
 });
 
 test('profile information can be updated', function (): void {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    $response = livewire(Profile::class)
+    Livewire::actingAs($user)
+        ->test(Profile::class)
         ->set('name', 'Test User')
         ->set('email', 'test@example.com')
-        ->call('updateProfileInformation');
+        ->call('updateProfileInformation')
+        ->assertHasNoErrors();
 
-    $response->assertHasNoErrors();
-
-    $user->refresh();
-
-    expect($user)
+    expect($user->refresh())
         ->name->toEqual('Test User')
         ->email->toEqual('test@example.com')
         ->email_verified_at->toBeNull();
@@ -36,9 +43,8 @@ test('profile information can be updated', function (): void {
 test('email is stored in lowercase so the user can still log in', function (): void {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    livewire(Profile::class)
+    Livewire::actingAs($user)
+        ->test(Profile::class)
         ->set('name', 'Test User')
         ->set('email', 'Test@Example.com')
         ->call('updateProfileInformation')
@@ -46,22 +52,21 @@ test('email is stored in lowercase so the user can still log in', function (): v
 
     expect($user->refresh()->email)->toBe('test@example.com');
 
-    $this->post(route('logout'));
+    post(route('logout'));
 
-    $this->post(route('login.store'), [
+    post(route('login.store'), [
         'email' => 'Test@Example.com',
         'password' => 'password',
     ]);
 
-    $this->assertAuthenticatedAs($user);
+    assertAuthenticatedAs($user);
 });
 
 test('email must be unique regardless of case', function (): void {
     User::factory()->create(['email' => 'taken@example.com']);
 
-    $this->actingAs(User::factory()->create());
-
-    livewire(Profile::class)
+    Livewire::actingAs(User::factory()->create())
+        ->test(Profile::class)
         ->set('name', 'Test User')
         ->set('email', 'Taken@Example.com')
         ->call('updateProfileInformation')
@@ -71,14 +76,12 @@ test('email must be unique regardless of case', function (): void {
 test('email verification status is unchanged when email address is unchanged', function (): void {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    $response = livewire(Profile::class)
+    Livewire::actingAs($user)
+        ->test(Profile::class)
         ->set('name', 'Test User')
         ->set('email', $user->email)
-        ->call('updateProfileInformation');
-
-    $response->assertHasNoErrors();
+        ->call('updateProfileInformation')
+        ->assertHasNoErrors();
 
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
@@ -86,31 +89,26 @@ test('email verification status is unchanged when email address is unchanged', f
 test('user can delete their account', function (): void {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    $response = livewire('settings.delete-user-form')
+    Livewire::actingAs($user)
+        ->test(DeleteUserForm::class)
         ->set('password', 'password')
-        ->call('deleteUser');
-
-    $response
+        ->call('deleteUser')
         ->assertHasNoErrors()
         ->assertRedirect('/');
 
-    expect($user->fresh())->toBeNull();
+    assertModelMissing($user);
 
-    expect(auth()->check())->toBeFalse();
+    assertGuest();
 });
 
 test('correct password must be provided to delete account', function (): void {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    $response = livewire('settings.delete-user-form')
+    Livewire::actingAs($user)
+        ->test(DeleteUserForm::class)
         ->set('password', 'wrong-password')
-        ->call('deleteUser');
+        ->call('deleteUser')
+        ->assertHasErrors(['password']);
 
-    $response->assertHasErrors(['password']);
-
-    expect($user->fresh())->not->toBeNull();
+    assertModelExists($user);
 });

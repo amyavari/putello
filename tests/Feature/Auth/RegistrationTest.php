@@ -2,22 +2,23 @@
 
 declare(strict_types=1);
 
-test('registration screen can be rendered', function (): void {
-    $response = $this->get(route('register'));
+use function Pest\Laravel\assertAuthenticated;
+use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 
-    $response->assertStatus(200);
+test('registration screen can be rendered', function (): void {
+    get(route('register'))->assertOk();
 });
 
 test('new users can register', function (): void {
-    $response = $this->post(route('register.store'), [
+    post(route('register.store'), [
         'name' => 'John Doe',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ]);
-
-    $response->assertSessionHasNoErrors()
+    ])
+        ->assertSessionHasNoErrors()
         ->assertRedirect(route('households.index', absolute: false));
 
-    $this->assertAuthenticated();
+    assertAuthenticated();
 });

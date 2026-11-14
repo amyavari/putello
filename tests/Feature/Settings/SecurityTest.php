@@ -7,8 +7,10 @@ use App\Livewire\Settings\TwoFactor\RecoveryCodes;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\Features;
+use Livewire\Livewire;
 
-use function Pest\Livewire\livewire;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertDatabaseHas;
 
 beforeEach(function (): void {
     if (! Features::canManageTwoFactorAuthentication()) {
@@ -28,25 +30,24 @@ beforeEach(function (): void {
 test('security settings page can be rendered', function (): void {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)
+    actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('security.edit'));
-
-    $response->assertOk();
-
-    $response->assertSee('Passkeys');
-    $response->assertSee('No passkeys yet');
-    $response->assertSee('Two-factor authentication');
-    $response->assertSee('Enable 2FA');
+        ->get(route('security.edit'))
+        ->assertOk()
+        /** @phpstan-ignore method.notFound (a Livewire macro on TestResponse) */
+        ->assertSeeLivewire(Security::class)
+        ->assertSee('Passkeys')
+        ->assertSee('No passkeys yet')
+        ->assertSee('Two-factor authentication')
+        ->assertSee('Enable 2FA');
 });
 
 test('security settings page requires password confirmation when enabled', function (): void {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)
-        ->get(route('security.edit'));
-
-    $response->assertRedirect(route('password.confirm'));
+    actingAs($user)
+        ->get(route('security.edit'))
+        ->assertRedirect(route('password.confirm'));
 });
 
 test('security settings page renders without two factor when feature is disabled', function (): void {
@@ -54,10 +55,8 @@ test('security settings page renders without two factor when feature is disabled
 
     $user = User::factory()->create();
 
-    $this->actingAs($user)
-        ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('security.edit'))
-        ->assertOk()
+    Livewire::actingAs($user)
+        ->test(Security::class)
         ->assertSee('Update password')
         ->assertDontSee('Manage your passkeys for passwordless sign-in')
         ->assertDontSee('Add a passkey to sign in without a password')
@@ -73,13 +72,11 @@ test('two factor authentication disabled when confirmation abandoned between req
         'two_factor_confirmed_at' => null,
     ])->save();
 
-    $this->actingAs($user);
+    Livewire::actingAs($user)
+        ->test(Security::class)
+        ->assertSet('twoFactorEnabled', false);
 
-    $component = livewire(Security::class);
-
-    $component->assertSet('twoFactorEnabled', false);
-
-    $this->assertDatabaseHas('users', [
+    assertDatabaseHas(User::class, [
         'id' => $user->id,
         'two_factor_secret' => null,
         'two_factor_recovery_codes' => null,
@@ -95,9 +92,8 @@ test('two factor setup does not reveal the secret when already enabled', functio
         'two_factor_confirmed_at' => now(),
     ])->save();
 
-    $this->actingAs($user);
-
-    livewire(Security::class)
+    Livewire::actingAs($user)
+        ->test(Security::class)
         ->call('enable')
         ->assertSet('manualSetupKey', '')
         ->assertSet('qrCodeSvg', '');
@@ -116,9 +112,8 @@ test('recovery codes are only loaded when requested', function (): void {
         'two_factor_confirmed_at' => now(),
     ])->save();
 
-    $this->actingAs($user);
-
-    livewire(RecoveryCodes::class)
+    Livewire::actingAs($user)
+        ->test(RecoveryCodes::class)
         ->assertSet('recoveryCodes', [])
         ->call('viewRecoveryCodes')
         ->assertSet('recoveryCodes', ['code1', 'code2']);
@@ -129,15 +124,13 @@ test('password can be updated', function (): void {
         'password' => Hash::make('password'),
     ]);
 
-    $this->actingAs($user);
-
-    $response = livewire(Security::class)
+    Livewire::actingAs($user)
+        ->test(Security::class)
         ->set('current_password', 'password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
-
-    $response->assertHasNoErrors();
+        ->call('updatePassword')
+        ->assertHasNoErrors();
 
     expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
 });
@@ -147,13 +140,11 @@ test('correct password must be provided to update password', function (): void {
         'password' => Hash::make('password'),
     ]);
 
-    $this->actingAs($user);
-
-    $response = livewire(Security::class)
+    Livewire::actingAs($user)
+        ->test(Security::class)
         ->set('current_password', 'wrong-password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
-
-    $response->assertHasErrors(['current_password']);
+        ->call('updatePassword')
+        ->assertHasErrors(['current_password']);
 });
