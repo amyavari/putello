@@ -1,22 +1,4 @@
 <section class="w-full max-w-3xl">
-    @if ($message !== null)
-        <div
-            wire:key="message-{{ md5($message) }}"
-            x-data="{ visible: true }"
-            x-init="setTimeout(() => visible = false, 5000)"
-            x-show="visible"
-            class="mb-6"
-        >
-            <flux:callout variant="success" icon="check-circle" :heading="$message" role="status">
-                <x-slot name="controls">
-                    <flux:button variant="ghost" size="sm" x-on:click="visible = false">
-                        {{ __('households.dismiss') }}
-                    </flux:button>
-                </x-slot>
-            </flux:callout>
-        </div>
-    @endif
-
     <div class="flex items-center justify-between gap-3">
         <flux:heading size="xl" level="1">{{ __('households.title') }}</flux:heading>
 
@@ -33,7 +15,12 @@
     @else
         <flux:card class="mt-6 divide-y divide-zinc-200 p-0 dark:divide-zinc-700">
             @foreach ($this->households as $household)
-                <div wire:key="household-{{ $household->id }}" class="flex items-center gap-3 px-4 py-3">
+                <a
+                    href="{{ route('places.index', $household) }}"
+                    wire:key="household-{{ $household->id }}"
+                    wire:navigate
+                    class="flex items-center gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+                >
                     <div class="min-w-0 flex-1">
                         <flux:heading>{{ $household->membership->label ?? $household->name }}</flux:heading>
                         <flux:text>{{ trans_choice('households.member_count', $household->members_count) }}</flux:text>
@@ -42,7 +29,9 @@
                     <flux:badge size="sm">
                         {{ $household->membership->role->label() }}
                     </flux:badge>
-                </div>
+
+                    <flux:icon.chevron-right variant="micro" class="text-zinc-400 rtl:rotate-180" />
+                </a>
             @endforeach
         </flux:card>
     @endif

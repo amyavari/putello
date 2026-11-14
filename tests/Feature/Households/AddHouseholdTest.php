@@ -12,21 +12,31 @@ use Livewire\Livewire;
 use function Pest\Laravel\assertDatabaseEmpty;
 use function Pest\Laravel\assertDatabaseHas;
 
-test('a user adds a household and sees it in the list', function (): void {
+test('a user adds a household', function (): void {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test(Index::class)
         ->set('name', 'Home')
         ->call('add')
-        ->assertHasNoErrors()
-        ->assertSee('Home added.')
-        ->assertDontSee('You have no households yet');
+        ->assertHasNoErrors();
 
     assertDatabaseHas(Household::class, [
         'name' => 'Home',
         'owner_id' => $user->id,
     ]);
+});
+
+test('after adding a household the app opens its places page with a message', function (): void {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(Index::class)
+        ->set('name', 'Home')
+        ->call('add')
+        ->assertRedirect(route('places.index', Household::query()->sole()));
+
+    expect(session('message'))->toBe('Home added.');
 });
 
 test('the user becomes a member of the new household with the role Owner and no label', function (): void {
@@ -52,9 +62,7 @@ test('a user can own more than one household', function (): void {
         ->test(Index::class)
         ->set('name', 'Office')
         ->call('add')
-        ->assertHasNoErrors()
-        ->assertSee('Home')
-        ->assertSee('Office');
+        ->assertHasNoErrors();
 
     assertDatabaseHas(Household::class, [
         'name' => 'Office',

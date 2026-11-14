@@ -7,7 +7,6 @@ namespace App\Livewire\Households;
 use App\Actions\CreateHouseholdAction;
 use App\Models\Household;
 use App\Models\User;
-use Flux\Flux;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,8 +20,6 @@ final class Index extends Component
 {
     #[Validate(['required', 'string', 'max:255'])]
     public string $name = '';
-
-    public ?string $message = null;
 
     /**
      * Get the households of the current user, with their member counts.
@@ -49,11 +46,9 @@ final class Index extends Component
 
         $household = $createHousehold->handle($user, $this->name);
 
-        $this->reset('name');
-        unset($this->households);
-        Flux::modal('add-household')->close();
+        session()->flash('message', __('households.added', ['name' => $household->name]));
 
-        $this->message = __('households.added', ['name' => $household->name]);
+        $this->redirectRoute('places.index', $household, navigate: true);
     }
 
     /**

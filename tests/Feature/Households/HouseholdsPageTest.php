@@ -99,6 +99,14 @@ test('a label set by another member is not shown', function (): void {
         ->assertDontSee('Parents’ home');
 });
 
+test('each household opens its places page', function (): void {
+    $household = Household::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class)
+        ->assertSeeHtml(sprintf('href="%s"', route('places.index', $household)));
+});
+
 test('guests are redirected to the login page', function (): void {
     get(route('households.index'))
         ->assertRedirect(route('login'));
