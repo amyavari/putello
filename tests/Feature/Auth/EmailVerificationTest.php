@@ -7,20 +7,22 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 
+use function Pest\Laravel\actingAs;
+
 test('email verification screen can be rendered', function (): void {
     $user = User::factory()->unverified()->create();
 
-    $response = $this->actingAs($user)->get(route('verification.notice'));
-
-    $response->assertStatus(200);
+    actingAs($user)
+        ->get(route('verification.notice'))
+        ->assertOk();
 });
 
 test('unverified users are redirected to the email verification prompt', function (): void {
     $user = User::factory()->unverified()->create();
 
-    $response = $this->actingAs($user)->get(route('appearance.edit'));
-
-    $response->assertRedirect(route('verification.notice'));
+    actingAs($user)
+        ->get(route('appearance.edit'))
+        ->assertRedirect(route('verification.notice'));
 });
 
 test('email can be verified', function (): void {
@@ -34,12 +36,13 @@ test('email can be verified', function (): void {
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
-    $response = $this->actingAs($user)->get($verificationUrl);
+    actingAs($user)
+        ->get($verificationUrl)
+        ->assertRedirect(route('households.index', absolute: false).'?verified=1');
 
     Event::assertDispatched(Verified::class);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(route('households.index', absolute: false).'?verified=1');
 });
 
 test('email is not verified with invalid hash', function (): void {
@@ -51,7 +54,7 @@ test('email is not verified with invalid hash', function (): void {
         ['id' => $user->id, 'hash' => sha1('wrong-email')]
     );
 
-    $this->actingAs($user)->get($verificationUrl);
+    actingAs($user)->get($verificationUrl);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });
@@ -69,10 +72,11 @@ test('already verified user visiting verification link is redirected without fir
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
-    $response = $this->actingAs($user)->get($verificationUrl);
+    actingAs($user)
+        ->get($verificationUrl)
+        ->assertRedirect(route('households.index', absolute: false).'?verified=1');
 
     Event::assertNotDispatched(Verified::class);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(route('households.index', absolute: false).'?verified=1');
 });
