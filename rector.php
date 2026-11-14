@@ -7,6 +7,7 @@ use Pest\Rector\Set\PestSetList;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodingStyle\Rector\Use_\SeparateMultiUseImportsRector;
 use Rector\Config\RectorConfig;
+use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
 use RectorLaravel\Set\LaravelSetList;
 
 return RectorConfig::configure()
@@ -41,6 +42,9 @@ return RectorConfig::configure()
     ->withSkip([
         SeparateMultiUseImportsRector::class,
         ChainExpectCallsRector::class,
+        AddHasFactoryToModelsRector::class => [
+            __DIR__.'/app/Models/HouseholdUser.php',
+        ],
     ])
     ->withPreparedSets(
         deadCode: true,
