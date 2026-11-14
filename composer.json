@@ -1,0 +1,124 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "amyavari/laravel-skeleton-strict-configs",
+    "type": "project",
+    "description": "A skeleton for starting a new Laravel project with proven, strict configurations that follow best practices.",
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "laravel/fortify": "^1.37.2",
+        "laravel/framework": "^13.17",
+        "laravel/tinker": "^3.0",
+        "livewire/blaze": "^1.0",
+        "livewire/flux": "^2.13.1",
+        "livewire/livewire": "^4.3.3",
+        "opcodesio/log-viewer": "^3.21"
+    },
+    "require-dev": {
+        "driftingly/rector-laravel": "^2.5",
+        "fakerphp/faker": "^1.24",
+        "larastan/larastan": "^3.9",
+        "laravel/boost": "^2.10",
+        "laravel/pail": "^1.2.5",
+        "laravel/pao": "^1.0.6",
+        "laravel/pint": "^1.27",
+        "laravel/sail": "^1.53",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.9.3",
+        "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-browser": "^5.0",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "pestphp/pest-plugin-livewire": "^5.0",
+        "pestphp/pest-plugin-phpstan": "^5.0",
+        "pestphp/pest-plugin-rector": "^5.0",
+        "pestphp/pest-plugin-type-coverage": "^5.0",
+        "rector/rector": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "lint": "pint -v",
+        "refactor": "rector process --ansi",
+        "test:lint": "pint --test -v",
+        "test:refactor": "rector process --dry-run --ansi",
+        "test:types": "phpstan analyse --ansi --memory-limit=1G",
+        "test:type-coverage": "pest --colors=always --type-coverage --parallel --memory-limit=1G",
+        "test:unit": "pest --colors=always --coverage --parallel",
+        "test": [
+            "@test:lint",
+            "@test:refactor",
+            "@test:types",
+            "@test:type-coverage",
+            "@test:unit"
+        ],
+        "setup": [
+            "composer install",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate",
+            "@php artisan migrate --force",
+            "npm install",
+            "npm run build"
+        ],
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan dev"
+        ],
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi"
+        ],
+        "pre-package-uninstall": [
+            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ]
+    },
+    "scripts-descriptions": {
+        "lint": "Run Laravel Pint to automatically fix code style issues.",
+        "refactor": "Run Rector to automatically refactor code.",
+        "test:lint": "Run Laravel Pint to check code style without fixing issues.",
+        "test:refactor": "Run Rector to check refactor needs without fixing issues.",
+        "test:types": "Run static analysis to check for type errors in the codebase.",
+        "test:type-coverage": "Run Pest type coverage to check for missing type declarations.",
+        "test:unit": "Run tests with code coverage report using Pest."
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
