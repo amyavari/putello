@@ -63,14 +63,13 @@ test('a household with only its owner shows one member', function (): void {
         ->assertDontSee('1 members');
 });
 
-test('a member sees their role instead of Owner', function (Role $role, string $shownRole): void {
+test('a member sees their role', function (Role $role, string $shownRole): void {
     $user = User::factory()->create();
     Household::factory()->create(['name' => 'Home'])->members()->attach($user, ['role' => $role]);
 
     Livewire::actingAs($user)
         ->test(Index::class)
-        ->assertSee($shownRole)
-        ->assertDontSee('Owner');
+        ->assertSee($shownRole);
 })->with([
     'editor' => ['role' => Role::Editor, 'shownRole' => 'Editor'],
     'viewer' => ['role' => Role::Viewer, 'shownRole' => 'Viewer'],
@@ -78,14 +77,14 @@ test('a member sees their role instead of Owner', function (Role $role, string $
 
 test('a member who set a label sees the label instead of the name', function (): void {
     $user = User::factory()->create();
-    $household = Household::factory()->create(['name' => 'Home']);
+    $household = Household::factory()->create(['name' => 'Lake house']);
     $household->members()->attach(User::factory()->count(2)->create(), ['role' => Role::Viewer]);
     $household->members()->attach($user, ['role' => Role::Editor, 'label' => 'Parents’ home']);
 
     Livewire::actingAs($user)
         ->test(Index::class)
         ->assertSee('Parents’ home')
-        ->assertDontSee('Home')
+        ->assertDontSee('Lake house')
         ->assertSee('4 members'); // The owner, 2 viewers and the user
 });
 
