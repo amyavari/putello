@@ -19,8 +19,24 @@
 
     <flux:heading size="xl" level="1">{{ __('places.title') }}</flux:heading>
 
-    <flux:card class="mt-6 text-center">
-        <flux:heading>{{ __('places.empty.heading') }}</flux:heading>
-        <flux:text class="mt-1">{{ __('places.empty.text') }}</flux:text>
-    </flux:card>
+    @if ($this->tree->roots()->isEmpty())
+        <flux:card class="mt-6 text-center">
+            <flux:heading>{{ __('places.empty.heading') }}</flux:heading>
+            <flux:text class="mt-1">{{ __('places.empty.text') }}</flux:text>
+        </flux:card>
+    @else
+        <flux:card class="mt-6 overflow-hidden p-0">
+            <ul x-data="{ open: true }">
+                <li>
+                    <x-places.tree-row :name="$this->householdName" :depth="0" :has-children="true" />
+
+                    <ul x-show="open">
+                        @foreach ($this->tree->roots() as $place)
+                            <x-places.tree-node :$place :tree="$this->tree" :depth="1" wire:key="place-{{ $place->id }}" />
+                        @endforeach
+                    </ul>
+                </li>
+            </ul>
+        </flux:card>
+    @endif
 </section>
