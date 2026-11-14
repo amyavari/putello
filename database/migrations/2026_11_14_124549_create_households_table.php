@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('households', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->foreignId('owner_id')->constrained('users');
+            $table->foreignUuid('owner_id')->constrained('users');
             $table->timestamps();
         });
     }
