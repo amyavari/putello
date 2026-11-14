@@ -1,8 +1,38 @@
-This Project plans and tracks my portfolio app. The docs under docs/ are the source of truth. At the start of every chat, read docs/02-progress.md and docs/01-workflow.md. Propose one step at a time and wait for my approval. After each approved step, update docs/02-progress.md (checklist and decision log). When I state a new rule or workflow, add it to docs/01-workflow.md. Keep everything simple, clean and easy to follow.
-
-===
-
 <laravel-boost-guidelines>
+=== .ai/project rules ===
+
+# Putello
+
+Putello is a shared home inventory for households, built as a portfolio app. The docs in `docs/` are the source of truth.
+
+## Workflow
+
+- At the start of every session, read `docs/02-progress.md` and `docs/01-workflow.md`, and follow the rules in `docs/01-workflow.md`.
+- Before any UI work, read `docs/phase-2/design.md`. It links the canvas (screens and flows) and the design system. Read both with the Artifact tool.
+
+## Coding rules
+
+- Keep the code simple, readable and close to framework conventions. A reviewer should understand any file in one pass.
+- Use the Actions pattern: one small, tested action per use case, created with `php artisan make:action` (for example `MoveItem`, `LendItem`).
+- Use free Flux components only. Build anything Flux free does not have (for example autocomplete) as a small custom Livewire component.
+- Put every UI string in the `lang/en` translation files. Keep layouts RTL-ready.
+- Write American English everywhere: the app's text, the code and the docs ("color", "canceled", "gray").
+- Tests run on SQLite locally and on PostgreSQL in CI. Do not write database-specific SQL.
+- Every feature has Pest tests, and `composer test` must pass.
+
+=== .ai/ui rules ===
+
+# UI rules
+
+- A "Skip to content" link, and focus moved to the page content after navigation.
+- After a failed submit, focus the first invalid field; errors are announced to screen readers.
+- `autocomplete` attributes on login and sign-up fields; password managers and paste allowed. Email fields use `type="email"`.
+- Icon-only buttons have an accessible name ("More actions for Sara", "Cancel invitation to John").
+- Search waits a moment after typing before it queries.
+- Motion is short and is switched off under `prefers-reduced-motion`.
+- Dates show the year when it isn't the current year.
+- "Undo" after archiving restores the item to the place it was in.
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -100,6 +130,16 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 # Deployment
 
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
+
+=== tests rules ===
+
+# Test Enforcement
+
+- Add or update tests for behavior and logic changes when a test provides meaningful regression coverage.
+- Pure copy, styling, and layout-only changes do not require new or updated tests.
+- When test coverage applies, run the affected tests and ensure they pass.
+- Test the changed behavior and its important failure modes, but do not add tests beyond them.
+- Read the `testing-best-practices` skill before writing tests.
 
 === laravel/core rules ===
 
