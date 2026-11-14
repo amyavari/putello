@@ -21,7 +21,7 @@ test('users can authenticate using the login screen', function (): void {
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect(route('households.index', absolute: false));
 
     $this->assertAuthenticated();
 });
