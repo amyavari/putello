@@ -6,11 +6,9 @@ namespace App\Livewire\Places;
 
 use App\Actions\DeletePlaceAction;
 use App\Actions\MovePlaceAction;
-use App\Actions\RenamePlaceAction;
 use App\Livewire\Concerns\RedirectsToPlaces;
 use App\Livewire\Concerns\ShowsFlashMessage;
 use App\Livewire\Concerns\ShowsHouseholdName;
-use App\Livewire\Concerns\ValidatesPlaceName;
 use App\Models\Household;
 use App\Models\Place;
 use App\Support\PlaceTree;
@@ -30,21 +28,11 @@ use Livewire\Component;
  */
 final class Show extends Component
 {
-    use RedirectsToPlaces, ShowsFlashMessage, ShowsHouseholdName, ValidatesPlaceName;
+    use RedirectsToPlaces, ShowsFlashMessage, ShowsHouseholdName;
 
     public Household $household;
 
     public Place $place;
-
-    /**
-     * The new name typed in the Rename place modal.
-     */
-    public string $name = '';
-
-    public function mount(): void
-    {
-        $this->name = $this->place->name;
-    }
 
     #[Computed]
     public function tree(): PlaceTree
@@ -79,17 +67,12 @@ final class Show extends Component
         return $this->tree->parentOf($this->place);
     }
 
-    public function rename(RenamePlaceAction $renamePlace): void
+    #[On('place-renamed')]
+    public function showRenamedPlace(): void
     {
-        $this->authorize('edit', $this->household);
-
-        $this->validatePlaceName($this->parentPlace, except: $this->place);
-
-        $renamePlace->handle($this->place, $this->name);
+        $this->place->refresh();
 
         unset($this->tree);
-
-        $this->modal('rename-place')->close();
 
         $this->message = __('places.renamed', ['name' => $this->place->name]);
     }
