@@ -1,6 +1,6 @@
 @props(['household', 'place', 'tree', 'depth'])
 
-@php($children = $tree->childrenOf($place))
+@php($children = $tree->placesInside($place))
 
 <li {{ $attributes }} x-data="{ open: true }">
     <x-places.tree-row :name="$place->name" :href="route('places.show', [$household, $place])" :$depth :has-children="$children->isNotEmpty()" />

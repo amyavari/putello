@@ -36,7 +36,7 @@
     @else
         <ul class="max-h-80 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-700" x-data="{ open: true }">
             <li>
-                <x-places.tree-row :name="$this->householdName" :depth="0" :has-children="$this->tree->roots()->isNotEmpty()">
+                <x-places.tree-row :name="$this->householdName" :depth="0" :has-children="$this->tree->topPlaces()->isNotEmpty()">
                     <x-places.picker-choice
                         :name="$this->householdName"
                         :is-chosen="$isHouseholdChosen"
@@ -46,7 +46,7 @@
                 </x-places.tree-row>
 
                 <ul x-show="open">
-                    @foreach ($this->tree->roots() as $topPlace)
+                    @foreach ($this->tree->topPlaces() as $topPlace)
                         <x-places.picker-node
                             :place="$topPlace"
                             :picker="$this"

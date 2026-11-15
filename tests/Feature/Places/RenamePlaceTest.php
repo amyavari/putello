@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Role;
+use App\Livewire\Places\Rename;
 use App\Livewire\Places\Show;
 use App\Models\Household;
 use App\Models\Place;
@@ -10,12 +11,37 @@ use Livewire\Livewire;
 
 use function Pest\Laravel\assertDatabaseHas;
 
+test('the owner and editors get the rename form', function (Role $role): void {
+    $household = Household::factory()->create();
+    $member = memberOf($household, $role);
+    $kitchen = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($member)
+        ->test(Show::class, ['household' => $household, 'place' => $kitchen])
+        /** @phpstan-ignore method.notFound (a Livewire macro on TestResponse) */
+        ->assertSeeLivewire(Rename::class);
+})->with([
+    'owner' => ['role' => Role::Owner],
+    'editor' => ['role' => Role::Editor],
+]);
+
+test('a viewer does not get the rename form', function (): void {
+    $household = Household::factory()->create();
+    $viewer = memberOf($household, Role::Viewer);
+    $kitchen = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($viewer)
+        ->test(Show::class, ['household' => $household, 'place' => $kitchen])
+        /** @phpstan-ignore method.notFound (a Livewire macro on TestResponse) */
+        ->assertDontSeeLivewire(Rename::class);
+});
+
 test('the owner renames a place', function (): void {
     $household = Household::factory()->create();
     $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->set('name', 'Pantry')
         ->call('rename')
         ->assertHasNoErrors();
@@ -32,7 +58,7 @@ test('an editor can rename a place', function (): void {
     $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($editor)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->set('name', 'Pantry')
         ->call('rename')
         ->assertHasNoErrors();
@@ -48,18 +74,31 @@ test('the name field starts with the current name', function (): void {
     $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->assertSet('name', 'Kitchen');
+});
+
+test('renaming tells the page that the place has a new name', function (): void {
+    $household = Household::factory()->create();
+    $place = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($household->owner)
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
+        ->set('name', 'Pantry')
+        ->call('rename')
+        ->assertDispatched('place-renamed');
 });
 
 test('after renaming the page shows the new name with a message', function (): void {
     $household = Household::factory()->create();
     $place = placeIn($household, 'Kitchen');
 
-    Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
-        ->set('name', 'Pantry')
-        ->call('rename')
+    $page = Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'place' => $place]);
+
+    $place->update(['name' => 'Pantry']); // Renamed in the Rename place modal
+
+    $page->dispatch('place-renamed')
         ->assertSeeInOrder(['Renamed to Pantry.', 'Pantry'])
         ->assertDontSee('Kitchen');
 });
@@ -69,7 +108,7 @@ test('the new name is trimmed', function (): void {
     $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->set('name', '  Pantry  ')
         ->call('rename');
 
@@ -84,7 +123,7 @@ test('the new name is required', function (): void {
     $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->set('name', '')
         ->call('rename')
         ->assertHasErrors(['name' => 'required'])
@@ -101,7 +140,7 @@ test('the new name can not be longer than 255 characters', function (): void {
     $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->set('name', str_repeat('a', 256))
         ->call('rename')
         ->assertHasErrors(['name' => 'max']);
@@ -119,7 +158,7 @@ test('a place can not take the name of a sibling ignoring case', function (): vo
     $drawer = placeInside($kitchen, 'Drawer');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $drawer])
+        ->test(Rename::class, ['household' => $household, 'place' => $drawer])
         ->set('name', 'cupboard')
         ->call('rename')
         ->assertHasErrors('name')
@@ -136,7 +175,7 @@ test('a place can be renamed to its own name with another case', function (): vo
     $place = placeIn($household, 'kitchen');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->set('name', 'Kitchen')
         ->call('rename')
         ->assertHasNoErrors();
@@ -154,7 +193,7 @@ test('the same name can be used inside another place', function (): void {
     $garage = placeIn($household, 'Garage');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $garage])
+        ->test(Rename::class, ['household' => $household, 'place' => $garage])
         ->set('name', 'Cupboard')
         ->call('rename')
         ->assertHasNoErrors();
@@ -171,7 +210,7 @@ test('the same name can be used in another household', function (): void {
     $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->set('name', 'Pantry')
         ->call('rename')
         ->assertHasNoErrors();
@@ -188,7 +227,7 @@ test('a viewer can not rename a place', function (): void {
     $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($viewer)
-        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->test(Rename::class, ['household' => $household, 'place' => $place])
         ->set('name', 'Pantry')
         ->call('rename')
         ->assertForbidden();
