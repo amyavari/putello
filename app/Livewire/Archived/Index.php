@@ -9,6 +9,8 @@ use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -72,7 +74,7 @@ final class Index extends Component
      * $placeId null is the household, which can't hold items.
      */
     #[On('place-chosen')]
-    public function restore(RestoreItemAction $restoreItem, ?string $placeId): void
+    public function restore(#[CurrentUser] User $user, RestoreItemAction $restoreItem, ?string $placeId): void
     {
         $this->authorize('edit', $this->household);
 
@@ -88,7 +90,7 @@ final class Index extends Component
             return;
         }
 
-        $restoreItem->handle($item, $place);
+        $restoreItem->handle($user, $item, $place);
 
         session()->flash('message', __('items.restored', [
             'name' => $item->name,

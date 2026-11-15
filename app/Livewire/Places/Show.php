@@ -13,7 +13,9 @@ use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
+use App\Models\User;
 use App\Support\PlaceTree;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -163,7 +165,7 @@ final class Show extends Component
         );
     }
 
-    public function undoArchive(RestoreItemAction $restoreItem): void
+    public function undoArchive(#[CurrentUser] User $user, RestoreItemAction $restoreItem): void
     {
         $this->authorize('edit', $this->household);
 
@@ -171,7 +173,7 @@ final class Show extends Component
             ->onlyTrashed()
             ->findOrFail($this->archivedItemId);
 
-        $restoreItem->handle($item, $this->place);
+        $restoreItem->handle($user, $item, $this->place);
 
         $this->archivedItemId = null;
 

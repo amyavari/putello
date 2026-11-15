@@ -58,6 +58,14 @@ final class Household extends Model
         return $this->hasMany(Item::class);
     }
 
+    /**
+     * @return HasMany<Activity, $this>
+     */
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class);
+    }
+
     public function hasMember(User $user): bool
     {
         return $this->members()

@@ -9,7 +9,9 @@ use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Livewire\Concerns\ValidatesItem;
 use App\Models\Household;
 use App\Models\Place;
+use App\Models\User;
 use App\Support\PlaceTree;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -71,13 +73,13 @@ final class Create extends Component
         $this->modal('choose-place')->close();
     }
 
-    public function add(CreateItemAction $createItem): void
+    public function add(#[CurrentUser] User $user, CreateItemAction $createItem): void
     {
         $this->authorize('edit', $this->household);
 
         $this->validateItem();
 
-        $item = $createItem->handle($this->place, $this->name, $this->notes);
+        $item = $createItem->handle($user, $this->place, $this->name, $this->notes);
 
         session()->flash('message', __('items.added', ['name' => $item->name]));
 
