@@ -36,4 +36,12 @@ final class ItemFactory extends Factory
             'place_id' => $place->id,
         ]);
     }
+
+    public function archived(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'place_id' => null,
+            'deleted_at' => now(),
+        ]);
+    }
 }

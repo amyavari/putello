@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Items;
 
+use App\Actions\ArchiveItemAction;
 use App\Actions\MoveItemAction;
 use App\Livewire\Concerns\ShowsFlashMessage;
 use App\Livewire\Concerns\ShowsHouseholdName;
@@ -62,6 +63,17 @@ final class Show extends Component
         ]));
 
         $this->redirectRoute('items.show', [$this->household, $this->item], navigate: true);
+    }
+
+    public function archive(ArchiveItemAction $archiveItem): void
+    {
+        $this->authorize('edit', $this->household);
+
+        $oldPlace = $archiveItem->handle($this->item);
+
+        session()->flash('message', __('items.archived', ['name' => $this->item->name]));
+
+        $this->redirectRoute('places.show', [$this->household, $oldPlace], navigate: true);
     }
 
     public function render(): View

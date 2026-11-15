@@ -18,6 +18,12 @@
                     <flux:menu.item :href="route('items.edit', [$household, $item])" wire:navigate icon="pencil-square">
                         {{ __('items.edit') }}
                     </flux:menu.item>
+
+                    <flux:menu.separator />
+
+                    <flux:menu.item wire:click="archive" icon="archive-box" variant="danger" class="text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-current!">
+                        {{ __('items.archive') }}
+                    </flux:menu.item>
                 </flux:menu>
             </flux:dropdown>
         </div>
