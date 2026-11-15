@@ -11,4 +11,11 @@ return [
     'dismiss' => 'Dismiss',
     'collapse' => 'Collapse :name',
     'expand' => 'Expand :name',
+    'add' => 'Add place',
+    'name' => 'Name',
+    'name_required' => 'Give the place a name so you can find it later.',
+    'name_taken' => 'There is already a place called “:name” here.',
+    'inside' => 'Inside',
+    'added' => ':name added.',
+    'cancel' => 'Cancel',
 ];

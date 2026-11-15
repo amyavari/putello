@@ -17,7 +17,15 @@
         </div>
     @endif
 
-    <flux:heading size="xl" level="1">{{ __('places.title') }}</flux:heading>
+    <div class="flex items-center justify-between gap-3">
+        <flux:heading size="xl" level="1">{{ __('places.title') }}</flux:heading>
+
+        @can('edit', $household)
+            <flux:button :href="route('places.create', $household)" wire:navigate variant="primary" icon="plus">
+                {{ __('places.add') }}
+            </flux:button>
+        @endcan
+    </div>
 
     @if ($this->tree->roots()->isEmpty())
         <flux:card class="mt-6 text-center">

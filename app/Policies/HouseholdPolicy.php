@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -24,5 +25,16 @@ final class HouseholdPolicy
         return $isMember
             ? Response::allow()
             : Response::denyAsNotFound();
+    }
+
+    /**
+     * Determine whether the user can change the household's places and items.
+     */
+    public function edit(User $user, Household $household): bool
+    {
+        return $household->members()
+            ->whereKey($user->id)
+            ->wherePivotIn('role', [Role::Owner, Role::Editor])
+            ->exists();
     }
 }

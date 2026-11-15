@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         ->middleware(SaveCurrentHousehold::class)
         ->group(function (): void {
             Route::livewire('places', Places\Index::class)->name('places.index');
+            Route::livewire('places/create', Places\Create::class)->name('places.create');
         });
 });
 

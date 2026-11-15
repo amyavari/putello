@@ -122,6 +122,30 @@ test('the places are loaded with one query at any depth', function (): void {
     expect($placeQueries)->toHaveCount(1);
 });
 
+test('the owner and editors see the add place button', function (Role $role): void {
+    $member = User::factory()->create();
+    $household = Household::factory()->create();
+    $household->members()->attach($member, ['role' => $role]);
+
+    Livewire::actingAs($member)
+        ->test(Index::class, ['household' => $household])
+        ->assertSee('Add place')
+        ->assertSeeHtml(sprintf('href="%s"', route('places.create', $household)));
+})->with([
+    'owner' => ['role' => Role::Owner],
+    'editor' => ['role' => Role::Editor],
+]);
+
+test('a viewer does not see the add place button', function (): void {
+    $viewer = User::factory()->create();
+    $household = Household::factory()->create();
+    $household->members()->attach($viewer, ['role' => Role::Viewer]);
+
+    Livewire::actingAs($viewer)
+        ->test(Index::class, ['household' => $household])
+        ->assertDontSee('Add place');
+});
+
 test('the message of the previous page is shown', function (): void {
     $household = Household::factory()->create();
 
