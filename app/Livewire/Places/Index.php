@@ -4,29 +4,19 @@ declare(strict_types=1);
 
 namespace App\Livewire\Places;
 
+use App\Livewire\Concerns\ShowsFlashMessage;
+use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
 use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 final class Index extends Component
 {
+    use ShowsFlashMessage, ShowsHouseholdName;
+
     public Household $household;
-
-    public ?string $message = null;
-
-    public function mount(): void
-    {
-        $this->message = session('message');
-    }
-
-    #[Computed]
-    public function householdName(): string
-    {
-        return $this->household->nameFor(Auth::user());
-    }
 
     #[Computed]
     public function tree(): PlaceTree

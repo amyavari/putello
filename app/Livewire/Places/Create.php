@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Places;
 
 use App\Actions\CreatePlaceAction;
+use App\Livewire\Concerns\RedirectsToPlaces;
+use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Livewire\Concerns\ValidatesPlaceName;
 use App\Models\Household;
 use App\Models\Place;
@@ -12,13 +14,12 @@ use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 final class Create extends Component
 {
-    use ValidatesPlaceName;
+    use RedirectsToPlaces, ShowsHouseholdName, ValidatesPlaceName;
 
     public Household $household;
 
@@ -38,12 +39,6 @@ final class Create extends Component
                 $request->string('inside')->toString(),
             );
         }
-    }
-
-    #[Computed]
-    public function householdName(): string
-    {
-        return $this->household->nameFor(Auth::user());
     }
 
     /**
@@ -69,15 +64,11 @@ final class Create extends Component
 
         $place = $createPlace->handle($this->household, $this->parent, $this->name);
 
-        session()->flash('message', __('places.added', ['name' => $place->name]));
-
-        if ($this->parent instanceof Place) {
-            $this->redirectRoute('places.show', [$this->household, $this->parent], navigate: true);
-
-            return;
-        }
-
-        $this->redirectRoute('places.index', $this->household, navigate: true);
+        $this->redirectToPlaces(
+            $this->household,
+            __('places.added', ['name' => $place->name]),
+            $this->parent,
+        );
     }
 
     public function render(): View

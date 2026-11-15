@@ -6,24 +6,24 @@ namespace App\Livewire\Places;
 
 use App\Actions\DeletePlaceAction;
 use App\Actions\RenamePlaceAction;
+use App\Livewire\Concerns\RedirectsToPlaces;
+use App\Livewire\Concerns\ShowsFlashMessage;
+use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Livewire\Concerns\ValidatesPlaceName;
 use App\Models\Household;
 use App\Models\Place;
 use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 final class Show extends Component
 {
-    use ValidatesPlaceName;
+    use RedirectsToPlaces, ShowsFlashMessage, ShowsHouseholdName, ValidatesPlaceName;
 
     public Household $household;
 
     public Place $place;
-
-    public ?string $message = null;
 
     /**
      * The new name typed in the Rename place modal.
@@ -32,14 +32,7 @@ final class Show extends Component
 
     public function mount(): void
     {
-        $this->message = session('message');
         $this->name = $this->place->name;
-    }
-
-    #[Computed]
-    public function householdName(): string
-    {
-        return $this->household->nameFor(Auth::user());
     }
 
     #[Computed]
@@ -83,15 +76,11 @@ final class Show extends Component
 
         $deletePlace->handle($this->place);
 
-        session()->flash('message', __('places.deleted', ['name' => $this->place->name]));
-
-        if ($parent instanceof Place) {
-            $this->redirectRoute('places.show', [$this->household, $parent], navigate: true);
-
-            return;
-        }
-
-        $this->redirectRoute('places.index', $this->household, navigate: true);
+        $this->redirectToPlaces(
+            $this->household,
+            __('places.deleted', ['name' => $this->place->name]),
+            $parent,
+        );
     }
 
     public function render(): View

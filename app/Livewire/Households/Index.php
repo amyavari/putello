@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Households;
 
 use App\Actions\CreateHouseholdAction;
+use App\Livewire\Concerns\RedirectsToPlaces;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -18,6 +19,8 @@ use Livewire\Component;
 
 final class Index extends Component
 {
+    use RedirectsToPlaces;
+
     #[Validate(['required', 'string', 'max:255'])]
     public string $name = '';
 
@@ -41,9 +44,7 @@ final class Index extends Component
 
         $household = $createHousehold->handle($user, $this->name);
 
-        session()->flash('message', __('households.added', ['name' => $household->name]));
-
-        $this->redirectRoute('places.index', $household, navigate: true);
+        $this->redirectToPlaces($household, __('households.added', ['name' => $household->name]));
     }
 
     public function render(): View
