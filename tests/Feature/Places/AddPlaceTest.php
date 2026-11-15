@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Role;
 use App\Livewire\Places\Create;
+use App\Livewire\Places\Picker;
 use App\Models\Household;
 use App\Models\Place;
 use App\Models\User;
@@ -91,6 +92,63 @@ test('the form shows the place the new place goes inside', function (): void {
         ->actingAs($household->owner)
         ->test(Create::class, ['household' => $household])
         ->assertSeeInOrder(['Inside', 'Kitchen']);
+});
+
+test('the add place page includes the place picker', function (): void {
+    $household = Household::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        /** @phpstan-ignore method.notFound (a Livewire macro on TestResponse) */
+        ->assertSeeLivewire(Picker::class);
+});
+
+test('the owner adds a place inside the chosen place', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->call('useChosenPlace', $kitchen->id)
+        ->set('name', 'Left cupboard')
+        ->call('add')
+        ->assertHasNoErrors();
+
+    assertDatabaseHas(Place::class, [
+        'household_id' => $household->id,
+        'parent_id' => $kitchen->id,
+        'name' => 'Left cupboard',
+    ]);
+});
+
+test('choosing the household puts the new place at the top', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+
+    Livewire::withQueryParams(['inside' => $kitchen->id])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->call('useChosenPlace', null) // The household was chosen
+        ->set('name', 'Garage')
+        ->call('add')
+        ->assertHasNoErrors();
+
+    assertDatabaseHas(Place::class, [
+        'household_id' => $household->id,
+        'parent_id' => null,
+        'name' => 'Garage',
+    ]);
+});
+
+test('a place of another household can not be chosen', function (): void {
+    $household = Household::factory()->create();
+    $placeOfAnotherHousehold = Place::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->call('useChosenPlace', $placeOfAnotherHousehold->id)
+        ->assertHasErrors('placeId')
+        ->assertSet('parent', null);
 });
 
 test('the breadcrumb shows the household and the places above the new place', function (): void {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Places;
 
 use App\Actions\DeletePlaceAction;
+use App\Actions\MovePlaceAction;
 use App\Actions\RenamePlaceAction;
 use App\Livewire\Concerns\RedirectsToPlaces;
 use App\Livewire\Concerns\ShowsFlashMessage;
@@ -16,10 +17,12 @@ use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
  * @property-read PlaceTree $tree
+ * @property-read string $householdName
  * @property-read Collection<int, Place> $placesInside
  * @property-read bool $hasPlacesInside
  * @property-read string $placesInsideErrorMessage
@@ -91,6 +94,36 @@ final class Show extends Component
         $this->message = __('places.renamed', ['name' => $this->place->name]);
     }
 
+    /**
+     * $placeId null is the top of the household.
+     */
+    #[On('place-chosen')]
+    public function move(MovePlaceAction $movePlace, ?string $placeId): void
+    {
+        $this->authorize('edit', $this->household);
+
+        $newParent = $placeId === null ? null : $this->household->places()->find($placeId);
+
+        $error = $this->moveErrorMessage($placeId, $newParent);
+
+        if ($error !== null) {
+            $this->addError('placeId', $error);
+
+            return;
+        }
+
+        $movePlace->handle($this->place, $newParent);
+
+        $this->redirectToPlaces(
+            $this->household,
+            __('places.moved', [
+                'name' => $this->place->name,
+                'place' => $newParent->name ?? $this->householdName,
+            ]),
+            $this->place,
+        );
+    }
+
     public function delete(DeletePlaceAction $deletePlace): void
     {
         $this->authorize('edit', $this->household);
@@ -116,5 +149,20 @@ final class Show extends Component
     {
         return view('livewire.places.show')
             ->title($this->place->name);
+    }
+
+    private function moveErrorMessage(?string $placeId, ?Place $newParent): ?string
+    {
+        $isUnknownPlace = $placeId !== null && ! $newParent instanceof Place;
+
+        if ($isUnknownPlace || ! $this->tree->canBeMovedTo($this->place, $newParent)) {
+            return __('places.cannot_move_there', ['name' => $this->place->name]);
+        }
+
+        if ($this->tree->hasSiblingNamed($newParent, $this->place->name, except: $this->place)) {
+            return __('places.name_taken', ['name' => $this->place->name]);
+        }
+
+        return null;
     }
 }

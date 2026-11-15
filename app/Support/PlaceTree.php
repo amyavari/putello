@@ -76,6 +76,34 @@ final readonly class PlaceTree
     }
 
     /**
+     * A place can't go inside itself or a place inside it, and must change where it is.
+     * $newParent null is the top of the household.
+     */
+    public function canBeMovedTo(Place $place, ?Place $newParent): bool
+    {
+        if (! $newParent instanceof Place) {
+            return ! $this->isAtTheTop($place);
+        }
+
+        return ! $newParent->is($place)
+            && ! $this->isInside($newParent, $place)
+            && ! $newParent->is($this->parentOf($place));
+    }
+
+    /**
+     * The check runs in PHP, so it is the same on SQLite and PostgreSQL.
+     *
+     * @return Collection<int, Place>
+     */
+    public function placesNamedLike(string $search): Collection
+    {
+        return $this->placesById
+            ->filter(fn (Place $place): bool => Str::contains($place->name, $search, ignoreCase: true))
+            ->sortBy(fn (Place $place): string => Str::lower($place->name))
+            ->values();
+    }
+
+    /**
      * @return Collection<int, Place>
      */
     public function placesAbove(Place $place): Collection
@@ -115,6 +143,12 @@ final readonly class PlaceTree
             ->sortBy(fn (Place $place): string => Str::lower($place->name))
             ->groupBy(fn (Place $place): string => $place->parent_id ?? self::TOP)
             ->map(fn (Collection $children): Collection => $children->values());
+    }
+
+    private function isInside(Place $place, Place $other): bool
+    {
+        return $this->placesAbove($place)
+            ->contains(fn (Place $placeAbove): bool => $placeAbove->is($other));
     }
 
     private function isAtTheTop(Place $place): bool
