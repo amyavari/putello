@@ -6,6 +6,7 @@ return [
     'title' => 'Archived',
     'link' => 'Archived items and borrowers',
     'items' => 'Items',
+    'was_in' => 'Was in: :path',
     'archived_on' => 'Archived: :date',
     'restore' => 'Restore',
     'empty' => [

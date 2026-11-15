@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Role;
 use App\Livewire\Archived\Index;
+use App\Livewire\Items\Show;
 use App\Livewire\Places;
 use App\Models\Household;
 use App\Models\Item;
@@ -100,6 +101,19 @@ test('an item archived in an earlier year shows the date with the year', functio
     Livewire::actingAs($household->owner)
         ->test(Index::class, ['household' => $household])
         ->assertSeeInOrder(['Umbrella', 'Archived:', 'Nov 2, 2025']);
+});
+
+test('an archived item shows the place it was in', function (): void {
+    $household = Household::factory()->create();
+    $kettle = itemIn(placeInside(placeIn($household, 'Kitchen'), 'Left cupboard'), 'Kettle');
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $kettle])
+        ->call('archive');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeInOrder(['Kettle', 'Was in:', 'Kitchen › Left cupboard', 'Archived:']);
 });
 
 test('a member sees a message when nothing is archived', function (): void {

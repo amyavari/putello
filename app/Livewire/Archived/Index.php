@@ -42,6 +42,7 @@ final class Index extends Component
     {
         return $this->household->items()
             ->onlyTrashed()
+            ->with('lastArchiveEntry')
             ->latest('deleted_at')
             ->get();
     }
@@ -61,6 +62,14 @@ final class Index extends Component
         return $archivedAt->isCurrentYear()
             ? $archivedAt->translatedFormat('M j')
             : $archivedAt->translatedFormat('M j, Y');
+    }
+
+    /**
+     * The path of the place the item was in, or null when no entry was recorded.
+     */
+    public function wasIn(Item $item): ?string
+    {
+        return $item->lastArchiveEntry?->from_value;
     }
 
     public function chooseItemToRestore(string $itemId): void
