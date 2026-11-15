@@ -52,7 +52,7 @@ final class Create extends Component
         }
 
         return PlaceTree::for($this->household)
-            ->ancestorsOf($this->parent)
+            ->placesAbove($this->parent)
             ->push($this->parent);
     }
 

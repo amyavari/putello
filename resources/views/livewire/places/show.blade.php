@@ -1,9 +1,7 @@
 <section class="w-full max-w-3xl">
     <x-flash-message :$message />
 
-    @php($children = $this->tree->childrenOf($place))
-
-    <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->tree->ancestorsOf($place)" />
+    <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->tree->placesAbove($place)" />
 
     <div class="mt-2 flex items-center justify-between gap-3">
         <flux:heading size="xl" level="1">{{ $place->name }}</flux:heading>
@@ -19,7 +17,7 @@
 
                     <flux:menu.separator />
 
-                    @if ($children->isEmpty())
+                    @if (! $this->hasPlacesInside)
                         <flux:modal.trigger name="delete-place">
                             <flux:menu.item icon="trash" variant="danger" class="text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-current!">{{ __('places.delete') }}</flux:menu.item>
                         </flux:modal.trigger>
@@ -27,7 +25,7 @@
                         <flux:menu.item icon="trash" variant="danger" class="text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-current!" disabled>{{ __('places.delete') }}</flux:menu.item>
 
                         <flux:text size="sm" class="max-w-56 px-2 pb-1.5">
-                            {{ trans_choice('places.move_places_inside_first', $children->count()) }}
+                            {{ $this->placesInsideErrorMessage }}
                         </flux:text>
                     @endif
                 </flux:menu>
@@ -45,13 +43,13 @@
         @endcan
     </div>
 
-    @if ($children->isEmpty())
+    @if (! $this->hasPlacesInside)
         <flux:card class="mt-2 text-center">
             <flux:text>{{ __('places.no_places_inside') }}</flux:text>
         </flux:card>
     @else
         <flux:card class="mt-2 divide-y divide-zinc-200 p-0 dark:divide-zinc-700">
-            @foreach ($children as $child)
+            @foreach ($this->placesInside as $child)
                 <a
                     href="{{ route('places.show', [$household, $child]) }}"
                     wire:key="place-{{ $child->id }}"

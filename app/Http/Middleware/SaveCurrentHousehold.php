@@ -23,10 +23,15 @@ final class SaveCurrentHousehold
         /** @var Household $household */
         $household = $request->route('household');
 
-        if ($user->current_household_id !== $household->id) {
+        if (! $this->isAlreadySaved($user, $household)) {
             $user->update(['current_household_id' => $household->id]);
         }
 
         return $next($request);
+    }
+
+    private function isAlreadySaved(User $user, Household $household): bool
+    {
+        return $user->current_household_id === $household->id;
     }
 }

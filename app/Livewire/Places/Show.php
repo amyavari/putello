@@ -14,9 +14,17 @@ use App\Models\Household;
 use App\Models\Place;
 use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
+/**
+ * @property-read PlaceTree $tree
+ * @property-read Collection<int, Place> $placesInside
+ * @property-read bool $hasPlacesInside
+ * @property-read string $placesInsideErrorMessage
+ * @property-read Place|null $parentPlace
+ */
 final class Show extends Component
 {
     use RedirectsToPlaces, ShowsFlashMessage, ShowsHouseholdName, ValidatesPlaceName;
@@ -41,14 +49,38 @@ final class Show extends Component
         return PlaceTree::for($this->household);
     }
 
+    /**
+     * @return Collection<int, Place>
+     */
+    #[Computed]
+    public function placesInside(): Collection
+    {
+        return $this->tree->childrenOf($this->place);
+    }
+
+    #[Computed]
+    public function hasPlacesInside(): bool
+    {
+        return $this->placesInside->isNotEmpty();
+    }
+
+    #[Computed]
+    public function placesInsideErrorMessage(): string
+    {
+        return trans_choice('places.move_places_inside_first', $this->placesInside->count());
+    }
+
+    #[Computed]
+    public function parentPlace(): ?Place
+    {
+        return $this->tree->parentOf($this->place);
+    }
+
     public function rename(RenamePlaceAction $renamePlace): void
     {
         $this->authorize('edit', $this->household);
 
-        $this->validatePlaceName(
-            PlaceTree::for($this->household)->parentOf($this->place),
-            except: $this->place,
-        );
+        $this->validatePlaceName($this->parentPlace, except: $this->place);
 
         $renamePlace->handle($this->place, $this->name);
 
@@ -63,16 +95,13 @@ final class Show extends Component
     {
         $this->authorize('edit', $this->household);
 
-        $tree = PlaceTree::for($this->household);
-        $placesInside = $tree->childrenOf($this->place);
-
-        if ($placesInside->isNotEmpty()) {
-            $this->addError('place', trans_choice('places.move_places_inside_first', $placesInside->count()));
+        if ($this->hasPlacesInside) {
+            $this->addError('place', $this->placesInsideErrorMessage);
 
             return;
         }
 
-        $parent = $tree->parentOf($this->place);
+        $parent = $this->parentPlace;
 
         $deletePlace->handle($this->place);
 

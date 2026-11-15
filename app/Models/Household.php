@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Database\Factories\HouseholdFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,6 +48,21 @@ final class Household extends Model
     public function places(): HasMany
     {
         return $this->hasMany(Place::class);
+    }
+
+    public function hasMember(User $user): bool
+    {
+        return $this->members()
+            ->whereKey($user->id)
+            ->exists();
+    }
+
+    public function canBeEditedBy(User $user): bool
+    {
+        return $this->members()
+            ->whereKey($user->id)
+            ->wherePivotIn('role', [Role::Owner, Role::Editor])
+            ->exists();
     }
 
     public function nameFor(User $user): string

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Enums\Role;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -16,11 +15,7 @@ final class HouseholdPolicy
      */
     public function view(User $user, Household $household): Response
     {
-        $isMember = $household->members()
-            ->whereKey($user->id)
-            ->exists();
-
-        return $isMember
+        return $household->hasMember($user)
             ? Response::allow()
             : Response::denyAsNotFound();
     }
@@ -30,9 +25,6 @@ final class HouseholdPolicy
      */
     public function edit(User $user, Household $household): bool
     {
-        return $household->members()
-            ->whereKey($user->id)
-            ->wherePivotIn('role', [Role::Owner, Role::Editor])
-            ->exists();
+        return $household->canBeEditedBy($user);
     }
 }
