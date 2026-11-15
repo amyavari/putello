@@ -58,7 +58,7 @@ final class Show extends Component
     #[Computed]
     public function placesInside(): Collection
     {
-        return $this->tree->childrenOf($this->place);
+        return $this->tree->placesInside($this->place);
     }
 
     #[Computed]

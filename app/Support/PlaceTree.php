@@ -43,7 +43,7 @@ final readonly class PlaceTree
     /**
      * @return Collection<int, Place>
      */
-    public function roots(): Collection
+    public function topPlaces(): Collection
     {
         return $this->childrenByParentId->get(self::TOP, new Collection);
     }
@@ -51,7 +51,7 @@ final readonly class PlaceTree
     /**
      * @return Collection<int, Place>
      */
-    public function childrenOf(Place $place): Collection
+    public function placesInside(Place $place): Collection
     {
         return $this->childrenByParentId->get($place->id, new Collection);
     }
@@ -162,8 +162,8 @@ final readonly class PlaceTree
     private function placesDirectlyIn(?Place $parent): Collection
     {
         return $parent instanceof Place
-            ? $this->childrenOf($parent)
-            : $this->roots();
+            ? $this->placesInside($parent)
+            : $this->topPlaces();
     }
 
     private function isSameName(string $name, string $otherName): bool

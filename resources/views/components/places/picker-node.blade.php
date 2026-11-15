@@ -1,6 +1,6 @@
 @props(['place', 'picker', 'depth'])
 
-@php($children = $picker->tree->childrenOf($place))
+@php($children = $picker->tree->placesInside($place))
 
 <li {{ $attributes }} x-data="{ open: false }">
     <x-places.tree-row :name="$place->name" :$depth :has-children="$children->isNotEmpty()">
