@@ -43,7 +43,7 @@ test('the owner adds a place at the top of the household', function (): void {
 
 test('the owner adds a place inside another place', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $kitchen = placeIn($household, 'Kitchen');
 
     Livewire::withQueryParams(['inside' => $kitchen->id])
         ->actingAs($household->owner)
@@ -60,9 +60,8 @@ test('the owner adds a place inside another place', function (): void {
 });
 
 test('an editor can add a place', function (): void {
-    $editor = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($editor, ['role' => Role::Editor]);
+    $editor = memberOf($household, Role::Editor);
 
     Livewire::actingAs($editor)
         ->test(Create::class, ['household' => $household])
@@ -86,7 +85,7 @@ test('the form shows the household as the place a top place goes inside', functi
 
 test('the form shows the place the new place goes inside', function (): void {
     $household = Household::factory()->create(['name' => 'Home']);
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $kitchen = placeIn($household, 'Kitchen');
 
     Livewire::withQueryParams(['inside' => $kitchen->id])
         ->actingAs($household->owner)
@@ -96,8 +95,8 @@ test('the form shows the place the new place goes inside', function (): void {
 
 test('the breadcrumb shows the household and the places above the new place', function (): void {
     $household = Household::factory()->create(['name' => 'Home']);
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Left cupboard']);
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Left cupboard');
 
     Livewire::withQueryParams(['inside' => $cupboard->id])
         ->actingAs($household->owner)
@@ -120,7 +119,7 @@ test('after adding a place at the top the app opens the places page with a messa
 
 test('after adding a place inside another place the app opens that place with a message', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $kitchen = placeIn($household, 'Kitchen');
 
     Livewire::withQueryParams(['inside' => $kitchen->id])
         ->actingAs($household->owner)
@@ -172,7 +171,7 @@ test('the name can not be longer than 255 characters', function (): void {
 
 test('two sibling places can not have the same name ignoring case', function (): void {
     $household = Household::factory()->create();
-    Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Create::class, ['household' => $household])
@@ -186,8 +185,8 @@ test('two sibling places can not have the same name ignoring case', function ():
 
 test('the same name can be used inside another place', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    Place::factory()->inside($kitchen)->create(['name' => 'Cupboard']);
+    $kitchen = placeIn($household, 'Kitchen');
+    placeInside($kitchen, 'Cupboard');
 
     Livewire::actingAs($household->owner)
         ->test(Create::class, ['household' => $household])
@@ -227,9 +226,8 @@ test('a place of another household can not be the place a new place goes inside'
 });
 
 test('a viewer can not open the add place page', function (): void {
-    $viewer = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($viewer, ['role' => Role::Viewer]);
+    $viewer = memberOf($household, Role::Viewer);
     actingAs($viewer);
 
     get(route('places.create', $household))
@@ -237,9 +235,8 @@ test('a viewer can not open the add place page', function (): void {
 });
 
 test('a member who became a viewer after opening the page can not add a place', function (): void {
-    $member = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($member, ['role' => Role::Editor]);
+    $member = memberOf($household, Role::Editor);
 
     $component = Livewire::actingAs($member)
         ->test(Create::class, ['household' => $household]);

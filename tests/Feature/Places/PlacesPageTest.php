@@ -25,9 +25,8 @@ test('the places page renders the places of the household', function (): void {
 });
 
 test('opening the places page saves the household as the one used last', function (): void {
-    $user = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($user, ['role' => Role::Viewer]);
+    $user = memberOf($household, Role::Viewer);
     actingAs($user);
 
     get(route('places.index', $household))
@@ -51,7 +50,7 @@ test('a member sees the empty state when the household has no places', function 
 
 test('the places are listed under the household', function (): void {
     $household = Household::factory()->create(['name' => 'Home']);
-    Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Index::class, ['household' => $household])
@@ -60,10 +59,9 @@ test('the places are listed under the household', function (): void {
 });
 
 test('a member who set a label sees the label at the top of the tree', function (): void {
-    $user = User::factory()->create();
     $household = Household::factory()->create(['name' => 'Lake house']);
-    $household->members()->attach($user, ['role' => Role::Viewer, 'label' => 'Parents’ home']);
-    Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $user = memberOf($household, Role::Viewer, label: 'Parents’ home');
+    placeIn($household, 'Kitchen');
 
     Livewire::actingAs($user)
         ->test(Index::class, ['household' => $household])
@@ -73,10 +71,10 @@ test('a member who set a label sees the label at the top of the tree', function 
 
 test('child places are listed under their parent at any depth', function (): void {
     $household = Household::factory()->create(['name' => 'Home']);
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Cupboard']);
-    Place::factory()->inside($cupboard)->create(['name' => 'Zebra box']);
-    Place::factory()->for($household)->create(['name' => 'Living room']);
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Cupboard');
+    placeInside($cupboard, 'Zebra box');
+    placeIn($household, 'Living room');
 
     Livewire::actingAs($household->owner)
         ->test(Index::class, ['household' => $household])
@@ -85,9 +83,9 @@ test('child places are listed under their parent at any depth', function (): voi
 
 test('sibling places are sorted by name ignoring case', function (): void {
     $household = Household::factory()->create();
-    Place::factory()->for($household)->create(['name' => 'Cellar']);
-    Place::factory()->for($household)->create(['name' => 'attic']);
-    Place::factory()->for($household)->create(['name' => 'Basement']);
+    placeIn($household, 'Cellar');
+    placeIn($household, 'attic');
+    placeIn($household, 'Basement');
 
     Livewire::actingAs($household->owner)
         ->test(Index::class, ['household' => $household])
@@ -96,7 +94,7 @@ test('sibling places are sorted by name ignoring case', function (): void {
 
 test('places of another household are not listed', function (): void {
     $household = Household::factory()->create();
-    Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    placeIn($household, 'Kitchen');
     Place::factory()->create(['name' => 'Garage']);
 
     Livewire::actingAs($household->owner)
@@ -107,8 +105,8 @@ test('places of another household are not listed', function (): void {
 
 test('each place in the tree opens its place page', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Cupboard']);
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Cupboard');
 
     Livewire::actingAs($household->owner)
         ->test(Index::class, ['household' => $household])
@@ -118,9 +116,9 @@ test('each place in the tree opens its place page', function (): void {
 
 test('the places are loaded with one query at any depth', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Cupboard']);
-    Place::factory()->inside($cupboard)->create(['name' => 'Drawer']);
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Cupboard');
+    placeInside($cupboard, 'Drawer');
 
     DB::enableQueryLog();
 
@@ -134,9 +132,8 @@ test('the places are loaded with one query at any depth', function (): void {
 });
 
 test('the owner and editors see the add place button', function (Role $role): void {
-    $member = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($member, ['role' => $role]);
+    $member = memberOf($household, $role);
 
     Livewire::actingAs($member)
         ->test(Index::class, ['household' => $household])
@@ -148,9 +145,8 @@ test('the owner and editors see the add place button', function (Role $role): vo
 ]);
 
 test('a viewer does not see the add place button', function (): void {
-    $viewer = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($viewer, ['role' => Role::Viewer]);
+    $viewer = memberOf($household, Role::Viewer);
 
     Livewire::actingAs($viewer)
         ->test(Index::class, ['household' => $household])

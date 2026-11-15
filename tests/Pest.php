@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Enums\Role;
+use App\Models\Household;
+use App\Models\Place;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Tests\TestCase;
 
@@ -34,8 +38,6 @@ pest()->tia()
 |
 */
 
-expect()->extend('toBeOne', fn () => $this->toBe(1));
-
 /*
 |--------------------------------------------------------------------------
 | Functions
@@ -47,7 +49,37 @@ expect()->extend('toBeOne', fn () => $this->toBe(1));
 |
 */
 
-function something(): void
+/**
+ * A new user who is a member of the household with the role, and their own label for it if given.
+ */
+function memberOf(Household $household, Role $role, ?string $label = null): User
 {
-    // ..
+    $member = User::factory()->create();
+
+    $household->members()->attach($member, [
+        'role' => $role,
+        'label' => $label,
+    ]);
+
+    return $member;
+}
+
+/**
+ * A place at the top of the household.
+ */
+function placeIn(Household $household, string $name): Place
+{
+    return Place::factory()
+        ->for($household)
+        ->create(['name' => $name]);
+}
+
+/**
+ * A place inside another place, in the same household.
+ */
+function placeInside(Place $parent, string $name): Place
+{
+    return Place::factory()
+        ->inside($parent)
+        ->create(['name' => $name]);
 }

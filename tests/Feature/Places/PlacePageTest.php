@@ -25,9 +25,9 @@ test('the place page renders the place', function (): void {
 
 test('the breadcrumb shows the household and the places above the place', function (): void {
     $household = Household::factory()->create(['name' => 'Home']);
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Left cupboard']);
-    $drawer = Place::factory()->inside($cupboard)->create(['name' => 'Drawer 3']);
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Left cupboard');
+    $drawer = placeInside($cupboard, 'Drawer 3');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $drawer])
@@ -36,8 +36,8 @@ test('the breadcrumb shows the household and the places above the place', functi
 
 test('the breadcrumb links to the places page and to the places above', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Left cupboard']);
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Left cupboard');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $cupboard])
@@ -46,10 +46,9 @@ test('the breadcrumb links to the places page and to the places above', function
 });
 
 test('a member who set a label sees the label as the first crumb', function (): void {
-    $user = User::factory()->create();
     $household = Household::factory()->create(['name' => 'Lake house']);
-    $household->members()->attach($user, ['role' => Role::Viewer, 'label' => 'Parents’ home']);
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $user = memberOf($household, Role::Viewer, label: 'Parents’ home');
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($user)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -59,9 +58,9 @@ test('a member who set a label sees the label as the first crumb', function (): 
 
 test('the places inside are listed with their paths', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Left cupboard']);
-    $drawer = Place::factory()->inside($cupboard)->create(['name' => 'Drawer 1']);
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Left cupboard');
+    $drawer = placeInside($cupboard, 'Drawer 1');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $cupboard])
@@ -72,9 +71,9 @@ test('the places inside are listed with their paths', function (): void {
 
 test('only the places directly inside are listed', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Left cupboard']);
-    Place::factory()->inside($cupboard)->create(['name' => 'Drawer 1']);
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Left cupboard');
+    placeInside($cupboard, 'Drawer 1');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $kitchen])
@@ -92,9 +91,8 @@ test('a place with no places inside shows a message', function (): void {
 });
 
 test('the owner and editors see the add place button and more actions', function (Role $role): void {
-    $member = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($member, ['role' => $role]);
+    $member = memberOf($household, $role);
     $place = Place::factory()->for($household)->create();
 
     Livewire::actingAs($member)
@@ -108,9 +106,8 @@ test('the owner and editors see the add place button and more actions', function
 ]);
 
 test('a viewer does not see the add place button or more actions', function (): void {
-    $viewer = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($viewer, ['role' => Role::Viewer]);
+    $viewer = memberOf($household, Role::Viewer);
     $place = Place::factory()->for($household)->create();
 
     Livewire::actingAs($viewer)

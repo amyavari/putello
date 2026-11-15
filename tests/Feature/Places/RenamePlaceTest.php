@@ -6,14 +6,13 @@ use App\Enums\Role;
 use App\Livewire\Places\Show;
 use App\Models\Household;
 use App\Models\Place;
-use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\assertDatabaseHas;
 
 test('the owner renames a place', function (): void {
     $household = Household::factory()->create();
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -28,10 +27,9 @@ test('the owner renames a place', function (): void {
 });
 
 test('an editor can rename a place', function (): void {
-    $editor = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($editor, ['role' => Role::Editor]);
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $editor = memberOf($household, Role::Editor);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($editor)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -47,7 +45,7 @@ test('an editor can rename a place', function (): void {
 
 test('the name field starts with the current name', function (): void {
     $household = Household::factory()->create();
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -56,7 +54,7 @@ test('the name field starts with the current name', function (): void {
 
 test('after renaming the page shows the new name with a message', function (): void {
     $household = Household::factory()->create();
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -68,7 +66,7 @@ test('after renaming the page shows the new name with a message', function (): v
 
 test('the new name is trimmed', function (): void {
     $household = Household::factory()->create();
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -83,7 +81,7 @@ test('the new name is trimmed', function (): void {
 
 test('the new name is required', function (): void {
     $household = Household::factory()->create();
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -100,7 +98,7 @@ test('the new name is required', function (): void {
 
 test('the new name can not be longer than 255 characters', function (): void {
     $household = Household::factory()->create();
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -116,9 +114,9 @@ test('the new name can not be longer than 255 characters', function (): void {
 
 test('a place can not take the name of a sibling ignoring case', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    Place::factory()->inside($kitchen)->create(['name' => 'Cupboard']);
-    $drawer = Place::factory()->inside($kitchen)->create(['name' => 'Drawer']);
+    $kitchen = placeIn($household, 'Kitchen');
+    placeInside($kitchen, 'Cupboard');
+    $drawer = placeInside($kitchen, 'Drawer');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $drawer])
@@ -135,7 +133,7 @@ test('a place can not take the name of a sibling ignoring case', function (): vo
 
 test('a place can be renamed to its own name with another case', function (): void {
     $household = Household::factory()->create();
-    $place = Place::factory()->for($household)->create(['name' => 'kitchen']);
+    $place = placeIn($household, 'kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -151,9 +149,9 @@ test('a place can be renamed to its own name with another case', function (): vo
 
 test('the same name can be used inside another place', function (): void {
     $household = Household::factory()->create();
-    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
-    Place::factory()->inside($kitchen)->create(['name' => 'Cupboard']);
-    $garage = Place::factory()->for($household)->create(['name' => 'Garage']);
+    $kitchen = placeIn($household, 'Kitchen');
+    placeInside($kitchen, 'Cupboard');
+    $garage = placeIn($household, 'Garage');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $garage])
@@ -170,7 +168,7 @@ test('the same name can be used inside another place', function (): void {
 test('the same name can be used in another household', function (): void {
     $household = Household::factory()->create();
     Place::factory()->create(['name' => 'Pantry']);
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'place' => $place])
@@ -185,10 +183,9 @@ test('the same name can be used in another household', function (): void {
 });
 
 test('a viewer can not rename a place', function (): void {
-    $viewer = User::factory()->create();
     $household = Household::factory()->create();
-    $household->members()->attach($viewer, ['role' => Role::Viewer]);
-    $place = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $viewer = memberOf($household, Role::Viewer);
+    $place = placeIn($household, 'Kitchen');
 
     Livewire::actingAs($viewer)
         ->test(Show::class, ['household' => $household, 'place' => $place])
