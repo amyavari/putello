@@ -1,4 +1,6 @@
 <section class="w-full max-w-3xl">
+    <x-flash-message :$message />
+
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->path" />
 
     <flux:heading size="xl" level="1" class="mt-2">{{ $item->name }}</flux:heading>

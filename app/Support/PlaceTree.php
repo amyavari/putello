@@ -120,13 +120,21 @@ final readonly class PlaceTree
     }
 
     /**
+     * The places from the top down to the place, the place included.
+     *
+     * @return Collection<int, Place>
+     */
+    public function placesDownTo(Place $place): Collection
+    {
+        return $this->placesAbove($place)->push($place);
+    }
+
+    /**
      * Get the names from the top place down to the place, for example "Kitchen › Left cupboard".
      */
     public function pathOf(Place $place): string
     {
-        $names = $this->placesAbove($place)
-            ->push($place)
-            ->pluck('name');
+        $names = $this->placesDownTo($place)->pluck('name');
 
         return $names->implode(__('places.path_separator'));
     }

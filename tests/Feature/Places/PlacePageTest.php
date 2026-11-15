@@ -162,6 +162,30 @@ test('a viewer does not see the add place button or more actions', function (): 
         ->assertDontSeeHtml('aria-label="More actions"');
 });
 
+test('the owner and editors see the add item button', function (Role $role): void {
+    $household = Household::factory()->create();
+    $member = memberOf($household, $role);
+    $place = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($member)
+        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->assertSee('Add item')
+        ->assertSeeHtml(sprintf('href="%s"', e(route('items.create', [$household, 'inside' => $place]))));
+})->with([
+    'owner' => ['role' => Role::Owner],
+    'editor' => ['role' => Role::Editor],
+]);
+
+test('a viewer does not see the add item button', function (): void {
+    $household = Household::factory()->create();
+    $viewer = memberOf($household, Role::Viewer);
+    $place = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($viewer)
+        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->assertDontSee('Add item');
+});
+
 test('the message of the previous page is shown', function (): void {
     $household = Household::factory()->create();
     $place = Place::factory()->for($household)->create();

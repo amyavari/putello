@@ -76,6 +76,15 @@ test('an item with no notes says so', function (): void {
         ->assertSee('No notes');
 });
 
+test('the message of the previous page is shown', function (): void {
+    $item = Item::factory()->create();
+
+    actingAs($item->household->owner)
+        ->withSession(['message' => 'Medal added.'])
+        ->get(route('items.show', [$item->household, $item]))
+        ->assertSee('Medal added.');
+});
+
 test('a viewer can see an item', function (): void {
     $household = Household::factory()->create();
     $viewer = memberOf($household, Role::Viewer);

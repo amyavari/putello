@@ -37,7 +37,15 @@
         @endcan
     </div>
 
-    <flux:heading size="lg" level="2" class="mt-6">{{ __('places.items_in_this_place') }}</flux:heading>
+    <div class="mt-6 flex items-center justify-between gap-3">
+        <flux:heading size="lg" level="2">{{ __('places.items_in_this_place') }}</flux:heading>
+
+        @can('edit', $household)
+            <flux:button :href="route('items.create', [$household, 'inside' => $place])" wire:navigate variant="primary" icon="plus">
+                {{ __('items.add') }}
+            </flux:button>
+        @endcan
+    </div>
 
     @if ($this->itemsInside->isEmpty())
         <flux:card class="mt-2 text-center">

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Items;
 
+use App\Livewire\Concerns\ShowsFlashMessage;
 use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
 use App\Models\Item;
@@ -20,25 +21,19 @@ use Livewire\Component;
  */
 final class Show extends Component
 {
-    use ShowsHouseholdName;
+    use ShowsFlashMessage, ShowsHouseholdName;
 
     public Household $household;
 
     public Item $item;
 
     /**
-     * The places from the top down to the place of the item.
-     *
      * @return Collection<int, Place>
      */
     #[Computed]
     public function path(): Collection
     {
-        $place = $this->item->place;
-
-        return PlaceTree::for($this->household)
-            ->placesAbove($place)
-            ->push($place);
+        return PlaceTree::for($this->household)->placesDownTo($this->item->place);
     }
 
     public function render(): View

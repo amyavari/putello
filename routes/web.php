@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::livewire('places/{place}', Places\Show::class)
                 ->scopeBindings()
                 ->name('places.show');
+            Route::livewire('items/create', Items\Create::class)->name('items.create');
             Route::livewire('items/{item}', Items\Show::class)
                 ->scopeBindings()
                 ->name('items.show');
