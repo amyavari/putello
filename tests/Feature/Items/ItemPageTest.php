@@ -76,6 +76,31 @@ test('an item with no notes says so', function (): void {
         ->assertSee('No notes');
 });
 
+test('the owner and editors see more actions with edit', function (Role $role): void {
+    $household = Household::factory()->create();
+    $member = memberOf($household, $role);
+    $medal = itemIn(placeIn($household, 'John’s room'), 'Medal');
+
+    Livewire::actingAs($member)
+        ->test(Show::class, ['household' => $household, 'item' => $medal])
+        ->assertSeeHtml('aria-label="More actions"')
+        ->assertSee('Edit')
+        ->assertSeeHtml(sprintf('href="%s"', route('items.edit', [$household, $medal])));
+})->with([
+    'owner' => ['role' => Role::Owner],
+    'editor' => ['role' => Role::Editor],
+]);
+
+test('a viewer does not see more actions', function (): void {
+    $household = Household::factory()->create();
+    $viewer = memberOf($household, Role::Viewer);
+    $medal = itemIn(placeIn($household, 'John’s room'), 'Medal');
+
+    Livewire::actingAs($viewer)
+        ->test(Show::class, ['household' => $household, 'item' => $medal])
+        ->assertDontSeeHtml('aria-label="More actions"');
+});
+
 test('the message of the previous page is shown', function (): void {
     $item = Item::factory()->create();
 

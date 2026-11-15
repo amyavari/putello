@@ -3,7 +3,21 @@
 
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->path" />
 
-    <flux:heading size="xl" level="1" class="mt-2">{{ $item->name }}</flux:heading>
+    <div class="mt-2 flex items-center justify-between gap-3">
+        <flux:heading size="xl" level="1">{{ $item->name }}</flux:heading>
+
+        @can('edit', $household)
+            <flux:dropdown position="bottom" align="end">
+                <flux:button icon="ellipsis-horizontal" square :aria-label="__('items.more_actions')" />
+
+                <flux:menu>
+                    <flux:menu.item :href="route('items.edit', [$household, $item])" wire:navigate icon="pencil-square">
+                        {{ __('items.edit') }}
+                    </flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
+        @endcan
+    </div>
 
     <flux:heading size="lg" level="2" class="mt-6">{{ __('items.place') }}</flux:heading>
 

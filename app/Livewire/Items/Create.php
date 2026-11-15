@@ -6,13 +6,13 @@ namespace App\Livewire\Items;
 
 use App\Actions\CreateItemAction;
 use App\Livewire\Concerns\ShowsHouseholdName;
+use App\Livewire\Concerns\ValidatesItem;
 use App\Models\Household;
 use App\Models\Place;
 use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -22,7 +22,7 @@ use Livewire\Component;
  */
 final class Create extends Component
 {
-    use ShowsHouseholdName;
+    use ShowsHouseholdName, ValidatesItem;
 
     public Household $household;
 
@@ -30,10 +30,6 @@ final class Create extends Component
      * The place the new item goes in.
      */
     public Place $place;
-
-    public string $name = '';
-
-    public ?string $notes = null;
 
     public function mount(Request $request): void
     {
@@ -59,18 +55,7 @@ final class Create extends Component
     {
         $this->authorize('edit', $this->household);
 
-        $this->name = Str::trim($this->name);
-        $this->notes = Str::trim((string) $this->notes) ?: null;
-
-        $this->validate(
-            rules: [
-                'name' => ['required', 'string', 'max:255'],
-                'notes' => ['nullable', 'string', 'max:255'],
-            ],
-            messages: [
-                'name.required' => __('items.name_required'),
-            ],
-        );
+        $this->validateItem();
 
         $item = $createItem->handle($this->place, $this->name, $this->notes);
 

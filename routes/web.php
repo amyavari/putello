@@ -26,6 +26,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::livewire('items/{item}', Items\Show::class)
                 ->scopeBindings()
                 ->name('items.show');
+            Route::livewire('items/{item}/edit', Items\Edit::class)
+                ->scopeBindings()
+                ->name('items.edit');
         });
 });
 
