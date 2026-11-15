@@ -15,6 +15,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 final class Create extends Component
@@ -54,6 +55,25 @@ final class Create extends Component
         return PlaceTree::for($this->household)
             ->placesAbove($this->parent)
             ->push($this->parent);
+    }
+
+    /**
+     * $placeId null is the household.
+     */
+    #[On('place-chosen')]
+    public function useChosenPlace(?string $placeId): void
+    {
+        $place = $placeId === null ? null : $this->household->places()->find($placeId);
+
+        if ($placeId !== null && ! $place instanceof Place) {
+            $this->addError('placeId', __('places.cannot_choose_place'));
+
+            return;
+        }
+
+        $this->parent = $place;
+
+        $this->modal('choose-place')->close();
     }
 
     public function add(CreatePlaceAction $createPlace): void

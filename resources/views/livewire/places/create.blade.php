@@ -8,7 +8,16 @@
 
         <div>
             <flux:text>{{ __('places.inside') }}</flux:text>
-            <flux:heading class="mt-1">{{ $parent->name ?? $this->householdName }}</flux:heading>
+
+            <div class="mt-1 flex items-center justify-between gap-3">
+                <flux:heading>{{ $parent->name ?? $this->householdName }}</flux:heading>
+
+                <flux:modal.trigger name="choose-place">
+                    <flux:button size="sm" variant="ghost">{{ __('places.change_place') }}</flux:button>
+                </flux:modal.trigger>
+            </div>
+
+            <flux:error name="placeId" />
         </div>
 
         <div class="flex gap-3">
@@ -24,4 +33,13 @@
             </flux:button>
         </div>
     </form>
+
+    <flux:modal name="choose-place" class="w-full md:w-[30rem]">
+        <livewire:places.picker
+            :$household
+            :chosen-place-id="$parent?->id"
+            :key="'picker-'.($parent->id ?? 'household')"
+            lazy
+        />
+    </flux:modal>
 </section>

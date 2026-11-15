@@ -41,7 +41,11 @@ return [
     'selected' => 'Selected: :place',
     'choose_a_place_first' => 'Choose a place first.',
     'move_here' => 'Move here',
+    'choose_a_place' => 'Choose a place',
+    'choose' => 'Choose',
+    'change_place' => 'Change place',
     'moved' => ':name moved. It is now in :place.',
+    'cannot_choose_place' => 'This place can’t be chosen. Choose another place.',
     'cannot_move_there' => ':name can’t be moved there. Choose another place.',
     'move_places_inside_first' => '{1} Move or remove the :count place inside first.|[2,*] Move or remove the :count places inside first.',
 ];

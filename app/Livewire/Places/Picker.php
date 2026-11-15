@@ -29,9 +29,9 @@ final class Picker extends Component
     public Household $household;
 
     /**
-     * The place being moved.
+     * The place being moved, or null when the picker only chooses a place (Add place).
      */
-    public Place $place;
+    public ?Place $place = null;
 
     public string $search = '';
 
@@ -60,6 +60,10 @@ final class Picker extends Component
     #[Computed]
     public function whereItIsNow(): string
     {
+        if (! $this->place instanceof Place) {
+            return '';
+        }
+
         return $this->tree->parentOf($this->place)->name ?? $this->householdName;
     }
 
@@ -76,7 +80,7 @@ final class Picker extends Component
     {
         $place = $this->findPlace($placeId);
 
-        if (! $place instanceof Place || ! $this->tree->canBeMovedTo($this->place, $place)) {
+        if (! $place instanceof Place || ! $this->canBeChosen($place)) {
             return;
         }
 
@@ -86,7 +90,7 @@ final class Picker extends Component
 
     public function chooseHousehold(): void
     {
-        if (! $this->tree->canBeMovedTo($this->place, null)) {
+        if (! $this->canBeChosen(null)) {
             return;
         }
 
@@ -101,6 +105,23 @@ final class Picker extends Component
         }
 
         $this->dispatch('place-chosen', placeId: $this->chosenPlace?->id);
+    }
+
+    public function isMovingAPlace(): bool
+    {
+        return $this->place instanceof Place;
+    }
+
+    /**
+     * $place null is the household.
+     */
+    public function canBeChosen(?Place $place): bool
+    {
+        if (! $this->place instanceof Place) {
+            return true;
+        }
+
+        return $this->tree->canBeMovedTo($this->place, $place);
     }
 
     public function isSearching(): bool

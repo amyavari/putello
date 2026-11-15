@@ -1,7 +1,11 @@
 <div class="space-y-4">
     <div>
-        <flux:heading size="lg">{{ __('places.move_heading', ['name' => $place->name]) }}</flux:heading>
-        <flux:text class="mt-1">{{ __('places.now_in', ['place' => $this->whereItIsNow]) }}</flux:text>
+        @if ($this->isMovingAPlace())
+            <flux:heading size="lg">{{ __('places.move_heading', ['name' => $place->name]) }}</flux:heading>
+            <flux:text class="mt-1">{{ __('places.now_in', ['place' => $this->whereItIsNow]) }}</flux:text>
+        @else
+            <flux:heading size="lg">{{ __('places.choose_a_place') }}</flux:heading>
+        @endif
     </div>
 
     <flux:input
@@ -22,7 +26,7 @@
                             :name="$match->name"
                             :path="$this->tree->pathOf($match)"
                             :is-chosen="$match->is($this->chosenPlace)"
-                            :can-be-chosen="$this->tree->canBeMovedTo($place, $match)"
+                            :can-be-chosen="$this->canBeChosen($match)"
                             wire:click="choosePlace('{{ $match->id }}')"
                         />
                     </li>
@@ -36,7 +40,7 @@
                     <x-places.picker-choice
                         :name="$this->householdName"
                         :is-chosen="$isHouseholdChosen"
-                        :can-be-chosen="$this->tree->canBeMovedTo($place, null)"
+                        :can-be-chosen="$this->canBeChosen(null)"
                         wire:click="chooseHousehold"
                     />
                 </x-places.tree-row>
@@ -45,10 +49,8 @@
                     @foreach ($this->tree->roots() as $topPlace)
                         <x-places.picker-node
                             :place="$topPlace"
-                            :tree="$this->tree"
+                            :picker="$this"
                             :depth="1"
-                            :place-to-move="$place"
-                            :chosen-place="$this->chosenPlace"
                             wire:key="picker-place-{{ $topPlace->id }}"
                         />
                     @endforeach
@@ -58,8 +60,11 @@
     @endif
 
     <flux:text size="sm">
-        {{ __('places.cannot_be_chosen', ['name' => $place->name]) }}
-        <br>
+        @if ($this->isMovingAPlace())
+            {{ __('places.cannot_be_chosen', ['name' => $place->name]) }}
+            <br>
+        @endif
+
         @if ($isHouseholdChosen)
             {{ __('places.selected', ['place' => $this->householdName]) }}
         @elseif ($this->chosenPlace !== null)
@@ -70,7 +75,7 @@
     </flux:text>
 
     <div class="flex gap-3">
-        <flux:button wire:click="confirm" variant="primary" :disabled="! $this->hasChoice">{{ __('places.move_here') }}</flux:button>
+        <flux:button wire:click="confirm" variant="primary" :disabled="! $this->hasChoice">{{ $this->isMovingAPlace() ? __('places.move_here') : __('places.choose') }}</flux:button>
 
         <flux:modal.close>
             <flux:button variant="ghost">{{ __('places.cancel') }}</flux:button>

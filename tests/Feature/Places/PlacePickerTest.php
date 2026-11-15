@@ -27,6 +27,26 @@ test('the picker shows the household as where a place at the top is now', functi
         ->assertSee('Now in Home');
 });
 
+test('the picker with no place to move asks to choose a place', function (): void {
+    $household = Household::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Picker::class, ['household' => $household])
+        ->assertSee('Choose a place')
+        ->assertDontSee('Now in')
+        ->assertDontSee('can’t be chosen')
+        ->assertDontSee('Move here');
+});
+
+test('the picker starts with the place it is given as chosen', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($household->owner)
+        ->test(Picker::class, ['household' => $household, 'chosenPlaceId' => $kitchen->id])
+        ->assertSee('Selected: Kitchen');
+});
+
 test('the picker shows the household as the top row, then its places', function (): void {
     $household = Household::factory()->create(['name' => 'Home']);
     $kitchen = placeIn($household, 'Kitchen');
@@ -79,6 +99,15 @@ test('choosing the household shows its name', function (): void {
     Livewire::actingAs($household->owner)
         ->test(Picker::class, ['household' => $household, 'place' => $cupboard])
         ->call('chooseHousehold') // Clicks the "Home" row
+        ->assertSee('Selected: Home');
+});
+
+test('the household can be chosen when no place is moved', function (): void {
+    $household = Household::factory()->create(['name' => 'Home']);
+
+    Livewire::actingAs($household->owner)
+        ->test(Picker::class, ['household' => $household])
+        ->call('chooseHousehold')
         ->assertSee('Selected: Home');
 });
 
