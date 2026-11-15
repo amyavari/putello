@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Role;
 use App\Livewire\Items\Create;
+use App\Livewire\Places\Picker;
 use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
@@ -84,6 +85,73 @@ test('the breadcrumb shows the household and the places of the path', function (
         ->actingAs($household->owner)
         ->test(Create::class, ['household' => $household])
         ->assertSeeInOrder(['Home', 'Kitchen', 'Drawer 1', 'Add item']);
+});
+
+test('the add item page includes the place picker', function (): void {
+    $household = Household::factory()->create();
+    $room = placeIn($household, 'John’s room');
+
+    Livewire::withQueryParams(['inside' => $room->id])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->assertSeeLivewire(Picker::class);
+});
+
+test('the owner adds an item to the place chosen in the picker', function (): void {
+    $household = Household::factory()->create();
+    $room = placeIn($household, 'John’s room');
+    $kitchen = placeIn($household, 'Kitchen');
+
+    Livewire::withQueryParams(['inside' => $room->id])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->call('useChosenPlace', $kitchen->id)
+        ->set('name', 'Kettle')
+        ->call('add')
+        ->assertHasNoErrors();
+
+    assertDatabaseHas(Item::class, [
+        'place_id' => $kitchen->id,
+        'name' => 'Kettle',
+    ]);
+});
+
+test('after choosing a place the breadcrumb shows its path', function (): void {
+    $household = Household::factory()->create(['name' => 'Home']);
+    $room = placeIn($household, 'John’s room');
+    $kitchen = placeIn($household, 'Kitchen');
+    $drawer = placeInside($kitchen, 'Drawer 1');
+
+    Livewire::withQueryParams(['inside' => $room->id])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->call('useChosenPlace', $drawer->id)
+        ->assertSeeInOrder(['Home', 'Kitchen', 'Drawer 1', 'Add item']);
+});
+
+test('the household can not be chosen for a new item', function (): void {
+    $household = Household::factory()->create();
+    $room = placeIn($household, 'John’s room');
+
+    Livewire::withQueryParams(['inside' => $room->id])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->call('useChosenPlace', null) // The household was chosen
+        ->assertHasErrors('placeId')
+        ->assertSet('place.id', $room->id);
+});
+
+test('a place of another household can not be chosen', function (): void {
+    $household = Household::factory()->create();
+    $room = placeIn($household, 'John’s room');
+    $placeOfAnotherHousehold = Place::factory()->create();
+
+    Livewire::withQueryParams(['inside' => $room->id])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->call('useChosenPlace', $placeOfAnotherHousehold->id)
+        ->assertHasErrors('placeId')
+        ->assertSet('place.id', $room->id);
 });
 
 test('after adding an item the app opens it with a message', function (): void {
