@@ -6,6 +6,7 @@ namespace App\Livewire\Places;
 
 use App\Actions\DeletePlaceAction;
 use App\Actions\MovePlaceAction;
+use App\Actions\RestoreItemAction;
 use App\Livewire\Concerns\RedirectsToPlaces;
 use App\Livewire\Concerns\ShowsFlashMessage;
 use App\Livewire\Concerns\ShowsHouseholdName;
@@ -17,6 +18,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -37,6 +39,17 @@ final class Show extends Component
     public Household $household;
 
     public Place $place;
+
+    /**
+     * The item archived just before this page opened, so the message can offer Undo.
+     */
+    #[Locked]
+    public ?string $archivedItemId = null;
+
+    public function mount(): void
+    {
+        $this->archivedItemId = session('archived_item_id');
+    }
 
     #[Computed]
     public function tree(): PlaceTree
@@ -115,6 +128,8 @@ final class Show extends Component
 
         unset($this->tree);
 
+        $this->archivedItemId = null;
+
         $this->message = __('places.renamed', ['name' => $this->place->name]);
     }
 
@@ -146,6 +161,26 @@ final class Show extends Component
             ]),
             $this->place,
         );
+    }
+
+    public function undoArchive(RestoreItemAction $restoreItem): void
+    {
+        $this->authorize('edit', $this->household);
+
+        $item = $this->household->items()
+            ->onlyTrashed()
+            ->findOrFail($this->archivedItemId);
+
+        $restoreItem->handle($item, $this->place);
+
+        $this->archivedItemId = null;
+
+        unset($this->itemsInside);
+
+        $this->message = __('items.restored', [
+            'name' => $item->name,
+            'place' => $this->place->name,
+        ]);
     }
 
     public function delete(DeletePlaceAction $deletePlace): void

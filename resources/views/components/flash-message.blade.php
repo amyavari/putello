@@ -1,4 +1,4 @@
-@props(['message'])
+@props(['message', 'undo' => null])
 
 @if ($message !== null)
     <div
@@ -10,6 +10,12 @@
     >
         <flux:callout variant="success" icon="check-circle" :heading="$message" role="status">
             <x-slot name="controls">
+                @if ($undo !== null)
+                    <flux:button variant="ghost" size="sm" wire:click="{{ $undo }}">
+                        {{ __('items.undo') }}
+                    </flux:button>
+                @endif
+
                 <flux:button variant="ghost" size="sm" x-on:click="visible = false">
                     {{ __('places.dismiss') }}
                 </flux:button>

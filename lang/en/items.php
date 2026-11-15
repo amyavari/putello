@@ -20,5 +20,9 @@ return [
     'no_notes' => 'No notes',
     'move' => 'Move',
     'moved' => ':name moved. It is now in :place.',
+    'archive' => 'Archive',
+    'archived' => ':name archived.',
+    'undo' => 'Undo',
+    'restored' => ':name restored. It is now in :place.',
     'cannot_move_there' => ':name can’t be moved there. Choose another place.',
 ];

@@ -97,3 +97,16 @@ function itemIn(Place $place, string $name, ?string $notes = null): Item
             'notes' => $notes,
         ]);
 }
+
+/**
+ * An archived item of the household.
+ */
+function archivedItemOf(Household $household, string $name): Item
+{
+    return Item::factory()
+        ->archived()
+        ->create([
+            'household_id' => $household->id,
+            'name' => $name,
+        ]);
+}

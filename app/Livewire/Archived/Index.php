@@ -1,0 +1,106 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Archived;
+
+use App\Actions\RestoreItemAction;
+use App\Livewire\Concerns\ShowsHouseholdName;
+use App\Models\Household;
+use App\Models\Item;
+use App\Models\Place;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
+use Livewire\Component;
+
+/**
+ * @property-read string $householdName
+ * @property-read Collection<int, Item> $archivedItems
+ */
+final class Index extends Component
+{
+    use ShowsHouseholdName;
+
+    public Household $household;
+
+    /**
+     * The item whose Restore was pressed, or null before any press.
+     */
+    #[Locked]
+    public ?string $itemToRestoreId = null;
+
+    /**
+     * @return Collection<int, Item>
+     */
+    #[Computed]
+    public function archivedItems(): Collection
+    {
+        return $this->household->items()
+            ->onlyTrashed()
+            ->latest('deleted_at')
+            ->get();
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->archivedItems->isEmpty();
+    }
+
+    /**
+     * The year is shown only when it is not the current year (UI rules).
+     */
+    public function archivedOn(Item $item): string
+    {
+        $archivedAt = $item->deleted_at;
+
+        return $archivedAt->isCurrentYear()
+            ? $archivedAt->translatedFormat('M j')
+            : $archivedAt->translatedFormat('M j, Y');
+    }
+
+    public function chooseItemToRestore(string $itemId): void
+    {
+        $this->itemToRestoreId = $itemId;
+
+        $this->modal('restore-item')->show();
+    }
+
+    /**
+     * $placeId null is the household, which can't hold items.
+     */
+    #[On('place-chosen')]
+    public function restore(RestoreItemAction $restoreItem, ?string $placeId): void
+    {
+        $this->authorize('edit', $this->household);
+
+        $item = $this->household->items()
+            ->onlyTrashed()
+            ->findOrFail($this->itemToRestoreId);
+
+        $place = $this->household->places()->find($placeId);
+
+        if (! $place instanceof Place) {
+            $this->addError('placeId', __('places.cannot_choose_place'));
+
+            return;
+        }
+
+        $restoreItem->handle($item, $place);
+
+        session()->flash('message', __('items.restored', [
+            'name' => $item->name,
+            'place' => $place->name,
+        ]));
+
+        $this->redirectRoute('items.show', [$this->household, $item], navigate: true);
+    }
+
+    public function render(): View
+    {
+        return view('livewire.archived.index')
+            ->title(__('archived.title'));
+    }
+}

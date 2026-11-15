@@ -13,10 +13,11 @@ return new class extends Migration
         Schema::create('items', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('household_id')->constrained();
-            $table->foreignUuid('place_id')->constrained();
+            $table->foreignUuid('place_id')->nullable()->constrained();
             $table->string('name');
             $table->string('notes')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 };

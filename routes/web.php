@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\SaveCurrentHousehold;
+use App\Livewire\Archived;
 use App\Livewire\Households;
 use App\Livewire\Items;
 use App\Livewire\Places;
@@ -29,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::livewire('items/{item}/edit', Items\Edit::class)
                 ->scopeBindings()
                 ->name('items.edit');
+            Route::livewire('archived', Archived\Index::class)->name('archived.index');
         });
 });
 
