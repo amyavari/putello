@@ -31,4 +31,8 @@
             </ul>
         </flux:card>
     @endif
+
+    <flux:link :href="route('archived.index', $household)" wire:navigate class="mt-6 inline-block">
+        {{ __('archived.link') }}
+    </flux:link>
 </section>

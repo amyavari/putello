@@ -30,10 +30,7 @@ test('the message after archiving offers undo', function (): void {
 test('undo puts the item back in the place it was in', function (): void {
     $household = Household::factory()->create();
     $johnsRoom = placeIn($household, 'John’s room');
-    $medal = Item::factory()->archived()->create([
-        'household_id' => $household->id,
-        'name' => 'Medal',
-    ]);
+    $medal = archivedItemOf($household, 'Medal');
     session(['archived_item_id' => $medal->id]);
 
     Livewire::actingAs($household->owner)
@@ -51,10 +48,7 @@ test('undo puts the item back in the place it was in', function (): void {
 test('after undo the place lists the item again', function (): void {
     $household = Household::factory()->create();
     $johnsRoom = placeIn($household, 'John’s room');
-    $medal = Item::factory()->archived()->create([
-        'household_id' => $household->id,
-        'name' => 'Medal',
-    ]);
+    $medal = archivedItemOf($household, 'Medal');
     session(['archived_item_id' => $medal->id]);
 
     Livewire::actingAs($household->owner)
@@ -66,10 +60,7 @@ test('after undo the place lists the item again', function (): void {
 test('after undo the page shows a message', function (): void {
     $household = Household::factory()->create();
     $johnsRoom = placeIn($household, 'John’s room');
-    $medal = Item::factory()->archived()->create([
-        'household_id' => $household->id,
-        'name' => 'Medal',
-    ]);
+    $medal = archivedItemOf($household, 'Medal');
     session(['archived_item_id' => $medal->id]);
 
     Livewire::actingAs($household->owner)
@@ -96,10 +87,7 @@ test('a viewer can not undo', function (): void {
     $household = Household::factory()->create();
     $viewer = memberOf($household, Role::Viewer);
     $johnsRoom = placeIn($household, 'John’s room');
-    $medal = Item::factory()->archived()->create([
-        'household_id' => $household->id,
-        'name' => 'Medal',
-    ]);
+    $medal = archivedItemOf($household, 'Medal');
     session(['archived_item_id' => $medal->id]);
 
     Livewire::actingAs($viewer)
@@ -113,10 +101,7 @@ test('a viewer can not undo', function (): void {
 test('undo goes away when the page shows another message', function (): void {
     $household = Household::factory()->create();
     $johnsRoom = placeIn($household, 'John’s room');
-    $medal = Item::factory()->archived()->create([
-        'household_id' => $household->id,
-        'name' => 'Medal',
-    ]);
+    $medal = archivedItemOf($household, 'Medal');
     session(['archived_item_id' => $medal->id]);
 
     Livewire::actingAs($household->owner)

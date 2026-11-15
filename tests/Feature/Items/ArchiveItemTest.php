@@ -86,10 +86,7 @@ test('the place page does not list archived items', function (): void {
     $household = Household::factory()->create();
     $johnsRoom = placeIn($household, 'John’s room');
     itemIn($johnsRoom, 'Medal');
-    Item::factory()->archived()->create([
-        'household_id' => $household->id,
-        'name' => 'Umbrella',
-    ]);
+    archivedItemOf($household, 'Umbrella');
 
     Livewire::actingAs($household->owner)
         ->test(Places\Show::class, ['household' => $household, 'place' => $johnsRoom])
@@ -100,10 +97,7 @@ test('the place page does not list archived items', function (): void {
 test('archived items are not counted on the places page', function (): void {
     $household = Household::factory()->create(['name' => 'Home']);
     itemIn(placeIn($household, 'Kitchen'), 'Kettle');
-    Item::factory()->archived()->create([
-        'household_id' => $household->id,
-        'name' => 'Umbrella',
-    ]);
+    archivedItemOf($household, 'Umbrella');
 
     Livewire::actingAs($household->owner)
         ->test(Index::class, ['household' => $household])
@@ -130,10 +124,7 @@ test('a place whose items are all archived can be deleted', function (): void {
 
 test('the page of an archived item gives a not found page', function (): void {
     $household = Household::factory()->create();
-    $umbrella = Item::factory()->archived()->create([
-        'household_id' => $household->id,
-        'name' => 'Umbrella',
-    ]);
+    $umbrella = archivedItemOf($household, 'Umbrella');
     actingAs($household->owner);
 
     get(route('items.show', [$household, $umbrella]))
