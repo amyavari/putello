@@ -165,6 +165,59 @@ test('a place of another household can not be chosen', function (): void {
         ->assertSee('Choose a place first.');
 });
 
+test('the picker shows the item to move and where it is now', function (): void {
+    $household = Household::factory()->create();
+    $medal = itemIn(placeIn($household, 'John’s room'), 'Medal');
+
+    Livewire::actingAs($household->owner)
+        ->test(Picker::class, ['household' => $household, 'item' => $medal])
+        ->assertSee('Move Medal')
+        ->assertSee('Now in John’s room')
+        ->assertSee('Move here')
+        ->assertDontSee('can’t be chosen');
+});
+
+test('the household can not be chosen when an item is moved', function (): void {
+    $household = Household::factory()->create();
+    $medal = itemIn(placeIn($household, 'John’s room'), 'Medal');
+
+    Livewire::actingAs($household->owner)
+        ->test(Picker::class, ['household' => $household, 'item' => $medal])
+        ->call('chooseHousehold')
+        ->assertSee('Choose a place first.');
+});
+
+test('the place the item is in can not be chosen', function (): void {
+    $household = Household::factory()->create();
+    $johnsRoom = placeIn($household, 'John’s room');
+    $medal = itemIn($johnsRoom, 'Medal');
+
+    Livewire::actingAs($household->owner)
+        ->test(Picker::class, ['household' => $household, 'item' => $medal])
+        ->call('choosePlace', $johnsRoom->id)
+        ->assertSee('Choose a place first.');
+});
+
+test('another place can be chosen when an item is moved', function (): void {
+    $household = Household::factory()->create();
+    $medal = itemIn(placeIn($household, 'John’s room'), 'Medal');
+    $kitchen = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($household->owner)
+        ->test(Picker::class, ['household' => $household, 'item' => $medal])
+        ->call('choosePlace', $kitchen->id)
+        ->assertSee('Selected: Kitchen');
+});
+
+test('the household can not be chosen for a new item', function (): void {
+    $household = Household::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Picker::class, ['household' => $household, 'isForAnItem' => true])
+        ->call('chooseHousehold')
+        ->assertSee('Choose a place first.');
+});
+
 test('finding a place lists the matches with their paths ignoring case', function (): void {
     $household = Household::factory()->create();
     $kitchen = placeIn($household, 'Kitchen');

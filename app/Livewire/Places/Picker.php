@@ -6,6 +6,7 @@ namespace App\Livewire\Places;
 
 use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
+use App\Models\Item;
 use App\Models\Place;
 use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
@@ -32,6 +33,16 @@ final class Picker extends Component
      * The place being moved, or null when the picker only chooses a place (Add place).
      */
     public ?Place $place = null;
+
+    /**
+     * The item being moved, or null when no item is moved.
+     */
+    public ?Item $item = null;
+
+    /**
+     * True when the place is for a new item (Add item), so the household can't be chosen.
+     */
+    public bool $isForAnItem = false;
 
     public string $search = '';
 
@@ -60,6 +71,10 @@ final class Picker extends Component
     #[Computed]
     public function whereItIsNow(): string
     {
+        if ($this->item instanceof Item) {
+            return $this->item->place->name;
+        }
+
         if (! $this->place instanceof Place) {
             return '';
         }
@@ -112,16 +127,39 @@ final class Picker extends Component
         return $this->place instanceof Place;
     }
 
+    public function isMovingAnItem(): bool
+    {
+        return $this->item instanceof Item;
+    }
+
+    public function isMoving(): bool
+    {
+        return $this->isMovingAPlace() || $this->isMovingAnItem();
+    }
+
+    public function nameOfWhatIsMoved(): string
+    {
+        return $this->item->name ?? $this->place->name ?? '';
+    }
+
     /**
      * $place null is the household.
      */
     public function canBeChosen(?Place $place): bool
     {
-        if (! $this->place instanceof Place) {
-            return true;
+        if (! $place instanceof Place && ! $this->canChooseTheHousehold()) {
+            return false;
         }
 
-        return $this->tree->canBeMovedTo($this->place, $place);
+        if ($this->item instanceof Item) {
+            return ! $this->item->place->is($place);
+        }
+
+        if ($this->place instanceof Place) {
+            return $this->tree->canBeMovedTo($this->place, $place);
+        }
+
+        return true;
     }
 
     public function isSearching(): bool
@@ -132,6 +170,11 @@ final class Picker extends Component
     public function render(): View
     {
         return view('livewire.places.picker');
+    }
+
+    private function canChooseTheHousehold(): bool
+    {
+        return ! $this->isForAnItem && ! $this->isMovingAnItem();
     }
 
     private function findPlace(?string $placeId): ?Place

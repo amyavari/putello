@@ -3,11 +3,15 @@
 
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->path" />
 
-    <div class="mt-2 flex items-center justify-between gap-3">
-        <flux:heading size="xl" level="1">{{ $item->name }}</flux:heading>
+    <flux:heading size="xl" level="1" class="mt-2">{{ $item->name }}</flux:heading>
 
-        @can('edit', $household)
-            <flux:dropdown position="bottom" align="end">
+    @can('edit', $household)
+        <div class="mt-4 flex items-center gap-3">
+            <flux:modal.trigger name="move-item">
+                <flux:button variant="primary" icon="arrows-right-left">{{ __('items.move') }}</flux:button>
+            </flux:modal.trigger>
+
+            <flux:dropdown position="bottom" align="start">
                 <flux:button icon="ellipsis-horizontal" square :aria-label="__('items.more_actions')" />
 
                 <flux:menu>
@@ -16,8 +20,8 @@
                     </flux:menu.item>
                 </flux:menu>
             </flux:dropdown>
-        @endcan
-    </div>
+        </div>
+    @endcan
 
     <flux:heading size="lg" level="2" class="mt-6">{{ __('items.place') }}</flux:heading>
 
@@ -40,4 +44,14 @@
             <p>{{ $item->notes }}</p>
         @endif
     </flux:card>
+
+    @can('edit', $household)
+        <flux:modal name="move-item" class="w-full md:w-[30rem]">
+            <div class="space-y-4">
+                <livewire:places.picker :$household :$item :key="'picker-'.$item->place_id" lazy />
+
+                <flux:error name="placeId" />
+            </div>
+        </flux:modal>
+    @endcan
 </section>

@@ -1,7 +1,7 @@
 <div class="space-y-4">
     <div>
-        @if ($this->isMovingAPlace())
-            <flux:heading size="lg">{{ __('places.move_heading', ['name' => $place->name]) }}</flux:heading>
+        @if ($this->isMoving())
+            <flux:heading size="lg">{{ __('places.move_heading', ['name' => $this->nameOfWhatIsMoved()]) }}</flux:heading>
             <flux:text class="mt-1">{{ __('places.now_in', ['place' => $this->whereItIsNow]) }}</flux:text>
         @else
             <flux:heading size="lg">{{ __('places.choose_a_place') }}</flux:heading>
@@ -75,7 +75,7 @@
     </flux:text>
 
     <div class="flex gap-3">
-        <flux:button wire:click="confirm" variant="primary" :disabled="! $this->hasChoice">{{ $this->isMovingAPlace() ? __('places.move_here') : __('places.choose') }}</flux:button>
+        <flux:button wire:click="confirm" variant="primary" :disabled="! $this->hasChoice">{{ $this->isMoving() ? __('places.move_here') : __('places.choose') }}</flux:button>
 
         <flux:modal.close>
             <flux:button variant="ghost">{{ __('places.cancel') }}</flux:button>
