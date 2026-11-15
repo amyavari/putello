@@ -7,6 +7,7 @@ return [
     'link' => 'Archived items and borrowers',
     'items' => 'Items',
     'archived_on' => 'Archived: :date',
+    'restore' => 'Restore',
     'empty' => [
         'heading' => 'Nothing is archived',
         'text' => 'Archived items and borrowers appear here, and can be restored.',
