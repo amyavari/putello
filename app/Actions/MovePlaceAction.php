@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class MovePlaceAction
 {
-    public function __construct(private RecordActivityAction $recordActivity) {}
+    public function __construct(
+        private RecordActivityAction $recordActivity,
+        private RecordPathChangesAction $recordPathChanges,
+    ) {}
 
     /**
      * $newParent null is the top of the household.
@@ -29,6 +32,7 @@ final readonly class MovePlaceAction
             $newPath = PlaceTree::for($place->household)->pathOf($place);
 
             $this->recordActivity->handle($user, ActivityType::PlaceMoved, $place, from: $oldPath, to: $newPath);
+            $this->recordPathChanges->handle($user, $place, $oldPath, $newPath);
         });
     }
 }

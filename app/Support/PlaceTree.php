@@ -134,6 +134,19 @@ final readonly class PlaceTree
     }
 
     /**
+     * The place and every place inside it, at any depth.
+     *
+     * @return Collection<int, Place>
+     */
+    public function placesDownFrom(Place $place): Collection
+    {
+        $placesInside = $this->placesInside($place)
+            ->flatMap(fn (Place $placeInside): Collection => $this->placesDownFrom($placeInside));
+
+        return $placesInside->prepend($place);
+    }
+
+    /**
      * Get the names from the top place down to the place, for example "Kitchen › Left cupboard".
      */
     public function pathOf(Place $place): string
