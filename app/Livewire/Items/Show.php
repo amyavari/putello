@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Items;
+
+use App\Livewire\Concerns\ShowsFlashMessage;
+use App\Livewire\Concerns\ShowsHouseholdName;
+use App\Models\Household;
+use App\Models\Item;
+use App\Models\Place;
+use App\Support\PlaceTree;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
+
+/**
+ * @property-read string $householdName
+ * @property-read Collection<int, Place> $path
+ */
+final class Show extends Component
+{
+    use ShowsFlashMessage, ShowsHouseholdName;
+
+    public Household $household;
+
+    public Item $item;
+
+    /**
+     * @return Collection<int, Place>
+     */
+    #[Computed]
+    public function path(): Collection
+    {
+        return PlaceTree::for($this->household)->placesDownTo($this->item->place);
+    }
+
+    public function render(): View
+    {
+        return view('livewire.items.show')
+            ->title($this->item->name);
+    }
+}

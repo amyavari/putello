@@ -20,7 +20,7 @@
         <flux:card class="mt-6 overflow-hidden p-0">
             <ul x-data="{ open: true }">
                 <li>
-                    <x-places.tree-row :name="$this->householdName" :depth="0" :has-children="true" />
+                    <x-places.tree-row :name="$this->householdName" :depth="0" :has-children="true" :number-of-items="$this->tree->numberOfAllItems()" />
 
                     <ul x-show="open">
                         @foreach ($this->tree->topPlaces() as $place)

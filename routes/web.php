@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\SaveCurrentHousehold;
 use App\Livewire\Households;
+use App\Livewire\Items;
 use App\Livewire\Places;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,13 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::livewire('places/{place}', Places\Show::class)
                 ->scopeBindings()
                 ->name('places.show');
+            Route::livewire('items/create', Items\Create::class)->name('items.create');
+            Route::livewire('items/{item}', Items\Show::class)
+                ->scopeBindings()
+                ->name('items.show');
+            Route::livewire('items/{item}/edit', Items\Edit::class)
+                ->scopeBindings()
+                ->name('items.edit');
         });
 });
 

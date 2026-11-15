@@ -10,10 +10,12 @@ use App\Livewire\Concerns\RedirectsToPlaces;
 use App\Livewire\Concerns\ShowsFlashMessage;
 use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
+use App\Models\Item;
 use App\Models\Place;
 use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -21,9 +23,11 @@ use Livewire\Component;
 /**
  * @property-read PlaceTree $tree
  * @property-read string $householdName
+ * @property-read Collection<int, Item> $itemsInside
  * @property-read Collection<int, Place> $placesInside
  * @property-read bool $hasPlacesInside
- * @property-read string $placesInsideErrorMessage
+ * @property-read bool $isEmpty
+ * @property-read string $notEmptyErrorMessage
  * @property-read Place|null $parentPlace
  */
 final class Show extends Component
@@ -41,6 +45,20 @@ final class Show extends Component
     }
 
     /**
+     * Only the items directly in this place, sorted by name ignoring case.
+     *
+     * @return Collection<int, Item>
+     */
+    #[Computed]
+    public function itemsInside(): Collection
+    {
+        return $this->place->items()
+            ->get()
+            ->sortBy(fn (Item $item): string => Str::lower($item->name))
+            ->values();
+    }
+
+    /**
      * @return Collection<int, Place>
      */
     #[Computed]
@@ -55,10 +73,33 @@ final class Show extends Component
         return $this->placesInside->isNotEmpty();
     }
 
+    /**
+     * Only the items and places directly inside count. Deeper ones are inside those places.
+     */
     #[Computed]
-    public function placesInsideErrorMessage(): string
+    public function isEmpty(): bool
     {
-        return trans_choice('places.move_places_inside_first', $this->placesInside->count());
+        return $this->itemsInside->isEmpty() && ! $this->hasPlacesInside;
+    }
+
+    #[Computed]
+    public function notEmptyErrorMessage(): string
+    {
+        $numberOfItems = $this->itemsInside->count();
+        $numberOfPlaces = $this->placesInside->count();
+
+        if ($numberOfPlaces === 0) {
+            return trans_choice('places.move_things_inside_first.items', $numberOfItems);
+        }
+
+        if ($numberOfItems === 0) {
+            return trans_choice('places.move_things_inside_first.places', $numberOfPlaces);
+        }
+
+        return __('places.move_things_inside_first.items_and_places', [
+            'items' => trans_choice('places.number_of_items', $numberOfItems),
+            'places' => trans_choice('places.number_of_places', $numberOfPlaces),
+        ]);
     }
 
     #[Computed]
@@ -111,8 +152,8 @@ final class Show extends Component
     {
         $this->authorize('edit', $this->household);
 
-        if ($this->hasPlacesInside) {
-            $this->addError('place', $this->placesInsideErrorMessage);
+        if (! $this->isEmpty) {
+            $this->addError('place', $this->notEmptyErrorMessage);
 
             return;
         }

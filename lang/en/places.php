@@ -19,6 +19,9 @@ return [
     'added' => ':name added.',
     'cancel' => 'Cancel',
     'path_separator' => ' › ',
+    'items_in_this_place' => 'Items in this place',
+    'nothing_here_yet' => 'Nothing here yet',
+    'number_of_items' => '{0} Empty|{1} :count item|[2,*] :count items',
     'places_inside' => 'Places inside',
     'no_places_inside' => 'No places inside',
     'more_actions' => 'More actions',
@@ -47,5 +50,10 @@ return [
     'moved' => ':name moved. It is now in :place.',
     'cannot_choose_place' => 'This place can’t be chosen. Choose another place.',
     'cannot_move_there' => ':name can’t be moved there. Choose another place.',
-    'move_places_inside_first' => '{1} Move or remove the :count place inside first.|[2,*] Move or remove the :count places inside first.',
+    'number_of_places' => '{1} :count place|[2,*] :count places',
+    'move_things_inside_first' => [
+        'items' => '{1} Move or remove the :count item inside first.|[2,*] Move or remove the :count items inside first.',
+        'places' => '{1} Move or remove the :count place inside first.|[2,*] Move or remove the :count places inside first.',
+        'items_and_places' => 'Move or remove the :items and :places inside first.',
+    ],
 ];

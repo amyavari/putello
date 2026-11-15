@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Role;
 use App\Livewire\Places\Index;
 use App\Models\Household;
+use App\Models\Item;
 use App\Models\Place;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -129,6 +130,88 @@ test('the places are loaded with one query at any depth', function (): void {
         ->filter(fn (array $query): bool => str_contains($query['query'], 'from "places"'));
 
     expect($placeQueries)->toHaveCount(1);
+});
+
+test('a place with one item says 1 item', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+    itemIn($kitchen, 'Kettle');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeInOrder(['Kitchen', '1 item']);
+});
+
+test('a place with more items shows the number of items', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+    itemIn($kitchen, 'Kettle');
+    itemIn($kitchen, 'Toaster');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeInOrder(['Kitchen', '2 items']);
+});
+
+test('a place with no items says empty', function (): void {
+    $household = Household::factory()->create();
+    placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeInOrder(['Kitchen', 'Empty']);
+});
+
+test('the number of items counts the items in the places inside at any depth', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Cupboard');
+    $drawer = placeInside($cupboard, 'Drawer');
+    itemIn($kitchen, 'Kettle');
+    itemIn($cupboard, 'Plate');
+    itemIn($drawer, 'Spoon');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeInOrder(['Kitchen', '3 items', 'Cupboard', '2 items', 'Drawer', '1 item']);
+});
+
+test('the household row shows the number of all items', function (): void {
+    $household = Household::factory()->create(['name' => 'Home']);
+    itemIn(placeIn($household, 'Garage'), 'Bike');
+    itemIn(placeIn($household, 'Kitchen'), 'Kettle');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeInOrder(['Home', '2 items', 'Garage', '1 item']);
+});
+
+test('items of another household are not counted', function (): void {
+    $household = Household::factory()->create(['name' => 'Home']);
+    placeIn($household, 'Kitchen');
+    Item::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeInOrder(['Home', 'Empty', 'Kitchen', 'Empty']);
+});
+
+test('the items are counted with one query at any depth', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+    $cupboard = placeInside($kitchen, 'Cupboard');
+    itemIn($kitchen, 'Kettle');
+    itemIn($cupboard, 'Plate');
+
+    DB::enableQueryLog();
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household]);
+
+    $itemQueries = collect(DB::getQueryLog())
+        ->filter(fn (array $query): bool => str_contains($query['query'], 'from "items"'));
+
+    expect($itemQueries)->toHaveCount(1);
 });
 
 test('the owner and editors see the add place button', function (Role $role): void {

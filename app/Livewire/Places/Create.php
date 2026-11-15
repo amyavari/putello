@@ -52,9 +52,7 @@ final class Create extends Component
             return new Collection;
         }
 
-        return PlaceTree::for($this->household)
-            ->placesAbove($this->parent)
-            ->push($this->parent);
+        return PlaceTree::for($this->household)->placesDownTo($this->parent);
     }
 
     /**

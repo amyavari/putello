@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 
 /**
  * The places of one household, loaded with one query and arranged as a tree in memory.
+ * The number of items in each place is loaded with one more query.
  */
 final readonly class PlaceTree
 {
@@ -22,10 +23,12 @@ final readonly class PlaceTree
     /**
      * @param  Collection<array-key, Place>  $placesById
      * @param  Collection<array-key, Collection<int, Place>>  $childrenByParentId
+     * @param  Collection<array-key, int>  $numberOfItemsByPlaceId  Only the items directly in each place.
      */
     private function __construct(
         private Collection $placesById,
         private Collection $childrenByParentId,
+        private Collection $numberOfItemsByPlaceId,
     ) {}
 
     public static function for(Household $household): self
@@ -37,6 +40,7 @@ final readonly class PlaceTree
         return new self(
             $places->keyBy('id'),
             self::groupChildrenByParentId($places),
+            self::countItemsByPlaceId($household),
         );
     }
 
@@ -120,15 +124,39 @@ final readonly class PlaceTree
     }
 
     /**
+     * The places from the top down to the place, the place included.
+     *
+     * @return Collection<int, Place>
+     */
+    public function placesDownTo(Place $place): Collection
+    {
+        return $this->placesAbove($place)->push($place);
+    }
+
+    /**
      * Get the names from the top place down to the place, for example "Kitchen › Left cupboard".
      */
     public function pathOf(Place $place): string
     {
-        $names = $this->placesAbove($place)
-            ->push($place)
-            ->pluck('name');
+        $names = $this->placesDownTo($place)->pluck('name');
 
         return $names->implode(__('places.path_separator'));
+    }
+
+    /**
+     * Counts the items in the place and in every place inside it, at any depth.
+     */
+    public function numberOfItemsInside(Place $place): int
+    {
+        $numberOfItemsInPlacesInside = $this->placesInside($place)
+            ->sum(fn (Place $placeInside): int => $this->numberOfItemsInside($placeInside));
+
+        return $this->numberOfItemsDirectlyIn($place) + $numberOfItemsInPlacesInside;
+    }
+
+    public function numberOfAllItems(): int
+    {
+        return $this->numberOfItemsByPlaceId->sum();
     }
 
     /**
@@ -143,6 +171,24 @@ final readonly class PlaceTree
             ->sortBy(fn (Place $place): string => Str::lower($place->name))
             ->groupBy(fn (Place $place): string => $place->parent_id ?? self::TOP)
             ->map(fn (Collection $children): Collection => $children->values());
+    }
+
+    /**
+     * @return Collection<array-key, int>
+     */
+    private static function countItemsByPlaceId(Household $household): Collection
+    {
+        return $household->items()
+            ->toBase()
+            ->selectRaw('place_id, count(*) as number_of_items')
+            ->groupBy('place_id')
+            ->pluck('number_of_items', 'place_id')
+            ->map(fn (mixed $numberOfItems): int => (int) $numberOfItems);
+    }
+
+    private function numberOfItemsDirectlyIn(Place $place): int
+    {
+        return $this->numberOfItemsByPlaceId->get($place->id, 0);
     }
 
     private function isInside(Place $place, Place $other): bool

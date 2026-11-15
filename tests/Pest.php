@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Role;
 use App\Models\Household;
+use App\Models\Item;
 use App\Models\Place;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -82,4 +83,17 @@ function placeInside(Place $parent, string $name): Place
     return Place::factory()
         ->inside($parent)
         ->create(['name' => $name]);
+}
+
+/**
+ * An item in the place, with optional notes.
+ */
+function itemIn(Place $place, string $name, ?string $notes = null): Item
+{
+    return Item::factory()
+        ->in($place)
+        ->create([
+            'name' => $name,
+            'notes' => $notes,
+        ]);
 }
