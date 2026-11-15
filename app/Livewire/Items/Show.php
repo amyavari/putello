@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Items;
 
+use App\Actions\MoveItemAction;
 use App\Livewire\Concerns\ShowsFlashMessage;
 use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
@@ -13,6 +14,7 @@ use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -36,9 +38,40 @@ final class Show extends Component
         return PlaceTree::for($this->household)->placesDownTo($this->item->place);
     }
 
+    /**
+     * $placeId null is the household, which can't hold items.
+     */
+    #[On('place-chosen')]
+    public function move(MoveItemAction $moveItem, ?string $placeId): void
+    {
+        $this->authorize('edit', $this->household);
+
+        $newPlace = $this->household->places()->find($placeId);
+
+        if (! $newPlace instanceof Place || $this->isAlreadyIn($newPlace)) {
+            $this->addError('placeId', __('items.cannot_move_there', ['name' => $this->item->name]));
+
+            return;
+        }
+
+        $moveItem->handle($this->item, $newPlace);
+
+        session()->flash('message', __('items.moved', [
+            'name' => $this->item->name,
+            'place' => $newPlace->name,
+        ]));
+
+        $this->redirectRoute('items.show', [$this->household, $this->item], navigate: true);
+    }
+
     public function render(): View
     {
         return view('livewire.items.show')
             ->title($this->item->name);
+    }
+
+    private function isAlreadyIn(Place $place): bool
+    {
+        return $this->item->place->is($place);
     }
 }
