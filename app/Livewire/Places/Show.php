@@ -139,7 +139,7 @@ final class Show extends Component
      * $placeId null is the top of the household.
      */
     #[On('place-chosen')]
-    public function move(MovePlaceAction $movePlace, ?string $placeId): void
+    public function move(#[CurrentUser] User $user, MovePlaceAction $movePlace, ?string $placeId): void
     {
         $this->authorize('edit', $this->household);
 
@@ -153,7 +153,7 @@ final class Show extends Component
             return;
         }
 
-        $movePlace->handle($this->place, $newParent);
+        $movePlace->handle($user, $this->place, $newParent);
 
         $this->redirectToPlaces(
             $this->household,
@@ -185,7 +185,7 @@ final class Show extends Component
         ]);
     }
 
-    public function delete(DeletePlaceAction $deletePlace): void
+    public function delete(#[CurrentUser] User $user, DeletePlaceAction $deletePlace): void
     {
         $this->authorize('edit', $this->household);
 
@@ -197,7 +197,7 @@ final class Show extends Component
 
         $parent = $this->parentPlace;
 
-        $deletePlace->handle($this->place);
+        $deletePlace->handle($user, $this->place);
 
         $this->redirectToPlaces(
             $this->household,

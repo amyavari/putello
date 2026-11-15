@@ -11,4 +11,8 @@ enum ActivityType: string
     case ItemMoved = 'item.moved';
     case ItemArchived = 'item.archived';
     case ItemRestored = 'item.restored';
+    case PlaceCreated = 'place.created';
+    case PlaceRenamed = 'place.renamed';
+    case PlaceMoved = 'place.moved';
+    case PlaceDeleted = 'place.deleted';
 }
