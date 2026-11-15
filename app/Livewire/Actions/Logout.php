@@ -12,8 +12,6 @@ use Livewire\Features\SupportRedirects\Redirector;
 final class Logout
 {
     /**
-     * Log the current user out of the application.
-     *
      * @phpstan-ignore return.unusedType
      */
     public function __invoke(): Redirector|RedirectResponse

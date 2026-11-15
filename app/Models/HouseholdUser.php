@@ -14,15 +14,11 @@ use Override;
 final class HouseholdUser extends Pivot
 {
     /**
-     * Indicates if the IDs are auto-incrementing.
-     *
      * @var bool
      */
     public $incrementing = true;
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     #[Override]

@@ -28,9 +28,6 @@ final class Create extends Component
 
     public string $name = '';
 
-    /**
-     * Check that the user can add places, and find the place given in the "inside" query parameter.
-     */
     public function mount(Request $request): void
     {
         $this->authorize('edit', $this->household);
@@ -42,9 +39,6 @@ final class Create extends Component
         }
     }
 
-    /**
-     * Get the household's name as the current user sees it: their label if they set one, otherwise the name.
-     */
     #[Computed]
     public function householdName(): string
     {
@@ -52,8 +46,6 @@ final class Create extends Component
     }
 
     /**
-     * Get the places above the new place, from the top down: the parent and its ancestors.
-     *
      * @return Collection<int, Place>
      */
     #[Computed]
@@ -68,9 +60,6 @@ final class Create extends Component
             ->push($this->parent);
     }
 
-    /**
-     * Add the place, then open the page of the place it went inside (or Places) with a message.
-     */
     public function add(CreatePlaceAction $createPlace): void
     {
         $this->authorize('edit', $this->household);
@@ -105,9 +94,6 @@ final class Create extends Component
         $this->redirectRoute('places.index', $this->household, navigate: true);
     }
 
-    /**
-     * Render the component.
-     */
     public function render(): View
     {
         return view('livewire.places.create')
@@ -115,8 +101,6 @@ final class Create extends Component
     }
 
     /**
-     * Fail when a sibling place already has the name, ignoring case.
-     *
      * The check runs in PHP, so it is the same on SQLite and PostgreSQL.
      */
     private function ensureNameIsFreeAmongSiblings(string $attribute, string $value, Closure $fail): void

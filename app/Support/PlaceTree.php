@@ -23,9 +23,6 @@ final readonly class PlaceTree
         private Collection $childrenByParentId,
     ) {}
 
-    /**
-     * Load the places of the household, with siblings sorted by name, ignoring case.
-     */
     public static function for(Household $household): self
     {
         $places = $household->places()
@@ -43,8 +40,6 @@ final readonly class PlaceTree
     }
 
     /**
-     * Get the places that sit directly in the household.
-     *
      * @return Collection<int, Place>
      */
     public function roots(): Collection
@@ -53,8 +48,6 @@ final readonly class PlaceTree
     }
 
     /**
-     * Get the places directly inside the place.
-     *
      * @return Collection<int, Place>
      */
     public function childrenOf(Place $place): Collection
@@ -63,8 +56,6 @@ final readonly class PlaceTree
     }
 
     /**
-     * Get the places the place is inside, from the top down.
-     *
      * @return Collection<int, Place>
      */
     public function ancestorsOf(Place $place): Collection

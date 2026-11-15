@@ -12,8 +12,6 @@ use Illuminate\Auth\Access\Response;
 final class HouseholdPolicy
 {
     /**
-     * Determine whether the user can open the household's pages.
-     *
      * A user who is not a member gets "not found", so the household's existence stays hidden.
      */
     public function view(User $user, Household $household): Response
@@ -28,7 +26,7 @@ final class HouseholdPolicy
     }
 
     /**
-     * Determine whether the user can change the household's places and items.
+     * Covers changing the household's places and items.
      */
     public function edit(User $user, Household $household): bool
     {

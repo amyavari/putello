@@ -16,15 +16,10 @@ use Override;
 final class MakeActionCommand extends GeneratorCommand
 {
     /**
-     * The type of class being generated.
-     *
      * @var string
      */
     protected $type = 'Action';
 
-    /**
-     * Execute the console command.
-     */
     #[Override]
     public function handle(): ?bool
     {
@@ -38,17 +33,11 @@ final class MakeActionCommand extends GeneratorCommand
         return parent::handle();
     }
 
-    /**
-     * Get the stub file for the generator.
-     */
     protected function getStub(): string
     {
         return base_path('/stubs/action.stub');
     }
 
-    /**
-     * Get the desired class name from the input.
-     */
     #[Override]
     protected function getNameInput(): string
     {
@@ -61,8 +50,6 @@ final class MakeActionCommand extends GeneratorCommand
     }
 
     /**
-     * Get the default namespace for the class.
-     *
      * @param  string  $rootNamespace
      */
     #[Override]

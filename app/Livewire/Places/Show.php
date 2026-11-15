@@ -29,36 +29,24 @@ final class Show extends Component
      */
     public string $name = '';
 
-    /**
-     * Show the message the previous page left, if any, and fill the Rename place modal with the current name.
-     */
     public function mount(): void
     {
         $this->message = session('message');
         $this->name = $this->place->name;
     }
 
-    /**
-     * Get the household's name as the current user sees it: their label if they set one, otherwise the name.
-     */
     #[Computed]
     public function householdName(): string
     {
         return $this->household->nameFor(Auth::user());
     }
 
-    /**
-     * Get the places of the household as a tree.
-     */
     #[Computed]
     public function tree(): PlaceTree
     {
         return PlaceTree::for($this->household);
     }
 
-    /**
-     * Rename the place, then close the modal and show a message.
-     */
     public function rename(RenamePlaceAction $renamePlace): void
     {
         $this->authorize('edit', $this->household);
@@ -89,9 +77,6 @@ final class Show extends Component
         $this->message = __('places.renamed', ['name' => $this->place->name]);
     }
 
-    /**
-     * Delete the place when it is empty, then open the page of the place it was inside (or Places) with a message.
-     */
     public function delete(DeletePlaceAction $deletePlace): void
     {
         $this->authorize('edit', $this->household);
@@ -120,9 +105,6 @@ final class Show extends Component
         $this->redirectRoute('places.index', $this->household, navigate: true);
     }
 
-    /**
-     * Render the component.
-     */
     public function render(): View
     {
         return view('livewire.places.show')
@@ -130,8 +112,6 @@ final class Show extends Component
     }
 
     /**
-     * Fail when another place next to this one already has the name, ignoring case.
-     *
      * The check runs in PHP, so it is the same on SQLite and PostgreSQL.
      */
     private function ensureNameIsFreeAmongSiblings(string $attribute, string $value, Closure $fail): void

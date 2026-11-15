@@ -13,8 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 final class SaveCurrentHousehold
 {
     /**
-     * Save the household of the route as the one the user used last.
-     *
      * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
