@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Places;
 
+use App\Actions\DeletePlaceAction;
 use App\Actions\RenamePlaceAction;
 use App\Models\Household;
 use App\Models\Place;
@@ -86,6 +87,37 @@ final class Show extends Component
         $this->modal('rename-place')->close();
 
         $this->message = __('places.renamed', ['name' => $this->place->name]);
+    }
+
+    /**
+     * Delete the place when it is empty, then open the page of the place it was inside (or Places) with a message.
+     */
+    public function delete(DeletePlaceAction $deletePlace): void
+    {
+        $this->authorize('edit', $this->household);
+
+        $tree = PlaceTree::for($this->household);
+        $placesInside = $tree->childrenOf($this->place);
+
+        if ($placesInside->isNotEmpty()) {
+            $this->addError('place', trans_choice('places.move_places_inside_first', $placesInside->count()));
+
+            return;
+        }
+
+        $parent = $tree->ancestorsOf($this->place)->last();
+
+        $deletePlace->handle($this->place);
+
+        session()->flash('message', __('places.deleted', ['name' => $this->place->name]));
+
+        if ($parent instanceof Place) {
+            $this->redirectRoute('places.show', [$this->household, $parent], navigate: true);
+
+            return;
+        }
+
+        $this->redirectRoute('places.index', $this->household, navigate: true);
     }
 
     /**

@@ -17,6 +17,8 @@
         </div>
     @endif
 
+    @php($children = $this->tree->childrenOf($place))
+
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->tree->ancestorsOf($place)" />
 
     <div class="mt-2 flex items-center justify-between gap-3">
@@ -30,6 +32,20 @@
                     <flux:modal.trigger name="rename-place">
                         <flux:menu.item icon="pencil-square">{{ __('places.rename') }}</flux:menu.item>
                     </flux:modal.trigger>
+
+                    <flux:menu.separator />
+
+                    @if ($children->isEmpty())
+                        <flux:modal.trigger name="delete-place">
+                            <flux:menu.item icon="trash" variant="danger" class="text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-current!">{{ __('places.delete') }}</flux:menu.item>
+                        </flux:modal.trigger>
+                    @else
+                        <flux:menu.item icon="trash" variant="danger" class="text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-current!" disabled>{{ __('places.delete') }}</flux:menu.item>
+
+                        <flux:text size="sm" class="max-w-56 px-2 pb-1.5">
+                            {{ trans_choice('places.move_places_inside_first', $children->count()) }}
+                        </flux:text>
+                    @endif
                 </flux:menu>
             </flux:dropdown>
         @endcan
@@ -44,8 +60,6 @@
             </flux:button>
         @endcan
     </div>
-
-    @php($children = $this->tree->childrenOf($place))
 
     @if ($children->isEmpty())
         <flux:card class="mt-2 text-center">
@@ -89,6 +103,28 @@
                     </flux:modal.close>
                 </div>
             </form>
+        </flux:modal>
+
+        <flux:modal name="delete-place" class="w-full md:w-[30rem]">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('places.delete_heading', ['name' => $place->name]) }}</flux:heading>
+                    <flux:text class="mt-1">
+                        {{ __('places.delete_description') }}
+                        <strong>{{ __('places.cannot_be_undone') }}</strong>
+                    </flux:text>
+                </div>
+
+                <flux:error name="place" />
+
+                <div class="flex gap-3">
+                    <flux:button wire:click="delete" variant="danger">{{ __('places.delete_place') }}</flux:button>
+
+                    <flux:modal.close>
+                        <flux:button variant="ghost">{{ __('places.cancel') }}</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
         </flux:modal>
     @endcan
 </section>
