@@ -9,7 +9,7 @@ use App\Models\Place;
 final readonly class DeletePlaceAction
 {
     /**
-     * Delete an empty place. The foreign key stops the delete if a place is still inside.
+     * The foreign key stops the delete if a place is still inside.
      */
     public function handle(Place $place): void
     {

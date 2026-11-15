@@ -72,9 +72,6 @@ final class Security extends Component
     #[Locked]
     public string $deletingPasskeyName = '';
 
-    /**
-     * Mount the component.
-     */
     public function mount(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
     {
         $this->canManageTwoFactor = Features::canManageTwoFactorAuthentication();
@@ -95,9 +92,6 @@ final class Security extends Component
         }
     }
 
-    /**
-     * Update the password for the currently authenticated user.
-     */
     public function updatePassword(): void
     {
         try {
@@ -120,9 +114,6 @@ final class Security extends Component
         Flux::toast(variant: 'success', text: __('Password updated.'));
     }
 
-    /**
-     * Load the user's passkeys.
-     */
     public function loadPasskeys(): void
     {
         $this->passkeys = Auth::user()->passkeys()
@@ -139,9 +130,6 @@ final class Security extends Component
             ->all();
     }
 
-    /**
-     * Show the delete confirmation modal.
-     */
     public function confirmDelete(int $passkeyId): void
     {
         $passkey = Auth::user()->passkeys()->findOrFail($passkeyId);
@@ -151,9 +139,6 @@ final class Security extends Component
         $this->showDeleteModal = true;
     }
 
-    /**
-     * Delete the passkey.
-     */
     public function deletePasskey(DeletePasskey $deletePasskey): void
     {
         if (! $this->deletingPasskeyId) {
@@ -169,9 +154,6 @@ final class Security extends Component
         $this->loadPasskeys();
     }
 
-    /**
-     * Close the delete confirmation modal.
-     */
     public function closeDeleteModal(): void
     {
         $this->showDeleteModal = false;
@@ -179,9 +161,6 @@ final class Security extends Component
         $this->deletingPasskeyName = '';
     }
 
-    /**
-     * Enable two-factor authentication for the user.
-     */
     public function enable(EnableTwoFactorAuthentication $enableTwoFactorAuthentication): void
     {
         if (auth()->user()->hasEnabledTwoFactorAuthentication()) {
@@ -201,9 +180,6 @@ final class Security extends Component
         $this->showModal = true;
     }
 
-    /**
-     * Show the two-factor verification step if necessary.
-     */
     public function showVerificationIfNecessary(): void
     {
         if ($this->requiresConfirmation) {
@@ -217,9 +193,6 @@ final class Security extends Component
         $this->closeModal();
     }
 
-    /**
-     * Confirm two-factor authentication for the user.
-     */
     public function confirmTwoFactor(ConfirmTwoFactorAuthentication $confirmTwoFactorAuthentication): void
     {
         $this->validate();
@@ -231,9 +204,6 @@ final class Security extends Component
         $this->twoFactorEnabled = true;
     }
 
-    /**
-     * Reset two-factor verification state.
-     */
     public function resetVerification(): void
     {
         $this->reset('code', 'showVerificationStep');
@@ -241,9 +211,6 @@ final class Security extends Component
         $this->resetErrorBag();
     }
 
-    /**
-     * Disable two-factor authentication for the user.
-     */
     public function disable(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
     {
         $disableTwoFactorAuthentication(auth()->user());
@@ -251,9 +218,6 @@ final class Security extends Component
         $this->twoFactorEnabled = false;
     }
 
-    /**
-     * Close the two-factor authentication modal.
-     */
     public function closeModal(): void
     {
         $this->reset(
@@ -272,8 +236,6 @@ final class Security extends Component
     }
 
     /**
-     * Get the current modal configuration state.
-     *
      * @return array{title: string, description: string, buttonText: string}
      */
     #[Computed]
@@ -302,9 +264,6 @@ final class Security extends Component
         ];
     }
 
-    /**
-     * Load the two-factor authentication setup data for the user.
-     */
     private function loadSetupData(): void
     {
         $user = auth()->user();

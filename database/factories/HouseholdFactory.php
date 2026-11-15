@@ -16,8 +16,6 @@ use Override;
 final class HouseholdFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -29,7 +27,7 @@ final class HouseholdFactory extends Factory
     }
 
     /**
-     * Add the owner as a member with the role Owner, as every household has.
+     * Every household has its owner as a member with the role Owner.
      */
     #[Override]
     public function configure(): static

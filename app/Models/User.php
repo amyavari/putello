@@ -25,7 +25,7 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     use HasFactory, HasUuids, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     /**
-     * Get the households the user is a member of, owned ones included.
+     * Owned households are included.
      *
      * @return BelongsToMany<Household, $this, HouseholdUser, 'membership'>
      */
@@ -38,9 +38,6 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             ->withTimestamps();
     }
 
-    /**
-     * Get the user's initials
-     */
     public function initials(): string
     {
         $initials = Str::initials($this->name, true);
@@ -51,8 +48,6 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     }
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     #[Override]

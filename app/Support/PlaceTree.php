@@ -15,46 +15,40 @@ use Illuminate\Support\Str;
 final readonly class PlaceTree
 {
     /**
+     * The key of the top places in $childrenByParentId, because they have no parent id.
+     */
+    private const string TOP = '';
+
+    /**
      * @param  Collection<array-key, Place>  $placesById
-     * @param  Collection<array-key, Collection<int, Place>>  $childrenByParentId  Top places are under the key "".
+     * @param  Collection<array-key, Collection<int, Place>>  $childrenByParentId
      */
     private function __construct(
         private Collection $placesById,
         private Collection $childrenByParentId,
     ) {}
 
-    /**
-     * Load the places of the household, with siblings sorted by name, ignoring case.
-     */
     public static function for(Household $household): self
     {
         $places = $household->places()
             ->get()
             ->toBase();
 
-        $placesById = $places->keyBy('id');
-
-        $childrenByParentId = $places
-            ->sortBy(fn (Place $place): string => Str::lower($place->name))
-            ->groupBy(fn (Place $place): string => $place->parent_id ?? '')
-            ->map(fn (Collection $children): Collection => $children->values());
-
-        return new self($placesById, $childrenByParentId);
+        return new self(
+            $places->keyBy('id'),
+            self::groupChildrenByParentId($places),
+        );
     }
 
     /**
-     * Get the places that sit directly in the household.
-     *
      * @return Collection<int, Place>
      */
     public function roots(): Collection
     {
-        return $this->childrenByParentId->get('', new Collection);
+        return $this->childrenByParentId->get(self::TOP, new Collection);
     }
 
     /**
-     * Get the places directly inside the place.
-     *
      * @return Collection<int, Place>
      */
     public function childrenOf(Place $place): Collection
@@ -62,23 +56,39 @@ final readonly class PlaceTree
         return $this->childrenByParentId->get($place->id, new Collection);
     }
 
-    /**
-     * Get the places the place is inside, from the top down.
-     *
-     * @return Collection<int, Place>
-     */
-    public function ancestorsOf(Place $place): Collection
+    public function parentOf(Place $place): ?Place
     {
-        $ancestors = new Collection;
-        $parentId = $place->parent_id;
-
-        while ($parentId !== null) {
-            $parent = $this->placesById[$parentId];
-            $ancestors->prepend($parent);
-            $parentId = $parent->parent_id;
+        if ($this->isAtTheTop($place)) {
+            return null;
         }
 
-        return $ancestors;
+        return $this->placesById->get($place->parent_id);
+    }
+
+    /**
+     * The check runs in PHP, so it is the same on SQLite and PostgreSQL.
+     */
+    public function hasSiblingNamed(?Place $parent, string $name, ?Place $except = null): bool
+    {
+        return $this->placesDirectlyIn($parent)
+            ->reject(fn (Place $place): bool => $place->is($except))
+            ->contains(fn (Place $place): bool => $this->isSameName($place->name, $name));
+    }
+
+    /**
+     * @return Collection<int, Place>
+     */
+    public function placesAbove(Place $place): Collection
+    {
+        $placesAbove = new Collection;
+        $parent = $this->parentOf($place);
+
+        while ($parent instanceof Place) {
+            $placesAbove->prepend($parent);
+            $parent = $this->parentOf($parent);
+        }
+
+        return $placesAbove;
     }
 
     /**
@@ -86,10 +96,44 @@ final readonly class PlaceTree
      */
     public function pathOf(Place $place): string
     {
-        $names = $this->ancestorsOf($place)
+        $names = $this->placesAbove($place)
             ->push($place)
             ->pluck('name');
 
         return $names->implode(__('places.path_separator'));
+    }
+
+    /**
+     * Siblings are sorted by name, ignoring case.
+     *
+     * @param  Collection<int, Place>  $places
+     * @return Collection<array-key, Collection<int, Place>>
+     */
+    private static function groupChildrenByParentId(Collection $places): Collection
+    {
+        return $places
+            ->sortBy(fn (Place $place): string => Str::lower($place->name))
+            ->groupBy(fn (Place $place): string => $place->parent_id ?? self::TOP)
+            ->map(fn (Collection $children): Collection => $children->values());
+    }
+
+    private function isAtTheTop(Place $place): bool
+    {
+        return $place->parent_id === null;
+    }
+
+    /**
+     * @return Collection<int, Place>
+     */
+    private function placesDirectlyIn(?Place $parent): Collection
+    {
+        return $parent instanceof Place
+            ? $this->childrenOf($parent)
+            : $this->roots();
+    }
+
+    private function isSameName(string $name, string $otherName): bool
+    {
+        return Str::lower($name) === Str::lower($otherName);
     }
 }

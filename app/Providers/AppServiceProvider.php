@@ -16,18 +16,12 @@ use Override;
 
 final class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     #[Override]
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         $this->configureCommands();
@@ -39,13 +33,7 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Block destructive commands in production. Like:
-     *
-     * - db:wipe
-     * - migrate:fresh
-     * - migrate:refresh
-     * - migrate:reset
-     * - migrate:rollback
+     * Blocks db:wipe, migrate:fresh, migrate:refresh, migrate:reset and migrate:rollback in production.
      */
     private function configureCommands(): void
     {
@@ -55,13 +43,7 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Prevent dangerous behavior and be more restrictive.
-     *
-     * - Prevent lazy loading.
-     * - Prevent silently discarding attributes (in mass assignment).
-     * - Prevent accessing missing attributes.
-     * - Disable all mass assignable restrictions
-     * - Model relationships should be automatically eager loaded when accessed
+     * shouldBeStrict() stops lazy loading, silently discarded attributes and access to missing attributes.
      */
     private function configureModels(): void
     {
@@ -70,9 +52,6 @@ final class AppServiceProvider extends ServiceProvider
         Model::automaticallyEagerLoadRelationships();
     }
 
-    /**
-     * Only handle HTTPS requests.
-     */
     private function configureUrl(): void
     {
         if ($this->app->environment('production')) {
@@ -81,24 +60,18 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get new instance of date each time we modify it.
+     * Every change to a date returns a new instance.
      */
     private function configureDates(): void
     {
         Date::use(CarbonImmutable::class);
     }
 
-    /**
-     * Enable unknown-field rejection for all form requests.
-     */
     private function configureFormRequests(): void
     {
         FormRequest::failOnUnknownFields();
     }
 
-    /**
-     * Require strong passwords in production.
-     */
     private function configurePasswords(): void
     {
         Password::defaults(fn (): ?Password => $this->app->environment('production')

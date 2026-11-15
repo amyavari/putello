@@ -10,9 +10,6 @@ enum Role: string
     case Editor = 'editor';
     case Viewer = 'viewer';
 
-    /**
-     * Get the name of the role shown to users.
-     */
     public function label(): string
     {
         return match ($this) {

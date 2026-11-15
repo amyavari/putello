@@ -9,9 +9,6 @@ use App\Models\Place;
 
 final readonly class CreatePlaceAction
 {
-    /**
-     * Create a place in the household, at the top or inside the parent place.
-     */
     public function handle(Household $household, ?Place $parent, string $name): Place
     {
         return $household->places()->create([

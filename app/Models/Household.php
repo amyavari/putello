@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Database\Factories\HouseholdFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,8 +19,6 @@ final class Household extends Model
     use HasFactory, HasUuids;
 
     /**
-     * Get the user who owns the household.
-     *
      * @return BelongsTo<User, $this>
      */
     public function owner(): BelongsTo
@@ -28,7 +27,7 @@ final class Household extends Model
     }
 
     /**
-     * Get the members of the household, the owner included.
+     * The owner is a member too.
      *
      * @return BelongsToMany<User, $this, HouseholdUser, 'membership'>
      */
@@ -42,7 +41,7 @@ final class Household extends Model
     }
 
     /**
-     * Get all the places of the household, at any depth.
+     * All the places, at any depth, not only the top ones.
      *
      * @return HasMany<Place, $this>
      */
@@ -51,9 +50,21 @@ final class Household extends Model
         return $this->hasMany(Place::class);
     }
 
-    /**
-     * Get the household's name as the user sees it: their label if they set one, otherwise the name.
-     */
+    public function hasMember(User $user): bool
+    {
+        return $this->members()
+            ->whereKey($user->id)
+            ->exists();
+    }
+
+    public function canBeEditedBy(User $user): bool
+    {
+        return $this->members()
+            ->whereKey($user->id)
+            ->wherePivotIn('role', [Role::Owner, Role::Editor])
+            ->exists();
+    }
+
     public function nameFor(User $user): string
     {
         $membership = $user->households()

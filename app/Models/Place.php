@@ -16,8 +16,6 @@ final class Place extends Model
     use HasFactory, HasUuids;
 
     /**
-     * Get the household the place belongs to.
-     *
      * @return BelongsTo<Household, $this>
      */
     public function household(): BelongsTo

@@ -6,50 +6,43 @@ namespace App\Livewire\Places;
 
 use App\Actions\DeletePlaceAction;
 use App\Actions\RenamePlaceAction;
+use App\Livewire\Concerns\RedirectsToPlaces;
+use App\Livewire\Concerns\ShowsFlashMessage;
+use App\Livewire\Concerns\ShowsHouseholdName;
+use App\Livewire\Concerns\ValidatesPlaceName;
 use App\Models\Household;
 use App\Models\Place;
 use App\Support\PlaceTree;
-use Closure;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
+/**
+ * @property-read PlaceTree $tree
+ * @property-read Collection<int, Place> $placesInside
+ * @property-read bool $hasPlacesInside
+ * @property-read string $placesInsideErrorMessage
+ * @property-read Place|null $parentPlace
+ */
 final class Show extends Component
 {
+    use RedirectsToPlaces, ShowsFlashMessage, ShowsHouseholdName, ValidatesPlaceName;
+
     public Household $household;
 
     public Place $place;
-
-    public ?string $message = null;
 
     /**
      * The new name typed in the Rename place modal.
      */
     public string $name = '';
 
-    /**
-     * Show the message the previous page left, if any, and fill the Rename place modal with the current name.
-     */
     public function mount(): void
     {
-        $this->message = session('message');
         $this->name = $this->place->name;
     }
 
-    /**
-     * Get the household's name as the current user sees it: their label if they set one, otherwise the name.
-     */
-    #[Computed]
-    public function householdName(): string
-    {
-        return $this->household->nameFor(Auth::user());
-    }
-
-    /**
-     * Get the places of the household as a tree.
-     */
     #[Computed]
     public function tree(): PlaceTree
     {
@@ -57,28 +50,37 @@ final class Show extends Component
     }
 
     /**
-     * Rename the place, then close the modal and show a message.
+     * @return Collection<int, Place>
      */
+    #[Computed]
+    public function placesInside(): Collection
+    {
+        return $this->tree->childrenOf($this->place);
+    }
+
+    #[Computed]
+    public function hasPlacesInside(): bool
+    {
+        return $this->placesInside->isNotEmpty();
+    }
+
+    #[Computed]
+    public function placesInsideErrorMessage(): string
+    {
+        return trans_choice('places.move_places_inside_first', $this->placesInside->count());
+    }
+
+    #[Computed]
+    public function parentPlace(): ?Place
+    {
+        return $this->tree->parentOf($this->place);
+    }
+
     public function rename(RenamePlaceAction $renamePlace): void
     {
         $this->authorize('edit', $this->household);
 
-        $this->name = Str::trim($this->name);
-
-        $this->validate(
-            rules: [
-                'name' => [
-                    'bail',
-                    'required',
-                    'string',
-                    'max:255',
-                    $this->ensureNameIsFreeAmongSiblings(...),
-                ],
-            ],
-            messages: [
-                'name.required' => __('places.name_required'),
-            ],
-        );
+        $this->validatePlaceName($this->parentPlace, except: $this->place);
 
         $renamePlace->handle($this->place, $this->name);
 
@@ -89,66 +91,30 @@ final class Show extends Component
         $this->message = __('places.renamed', ['name' => $this->place->name]);
     }
 
-    /**
-     * Delete the place when it is empty, then open the page of the place it was inside (or Places) with a message.
-     */
     public function delete(DeletePlaceAction $deletePlace): void
     {
         $this->authorize('edit', $this->household);
 
-        $tree = PlaceTree::for($this->household);
-        $placesInside = $tree->childrenOf($this->place);
-
-        if ($placesInside->isNotEmpty()) {
-            $this->addError('place', trans_choice('places.move_places_inside_first', $placesInside->count()));
+        if ($this->hasPlacesInside) {
+            $this->addError('place', $this->placesInsideErrorMessage);
 
             return;
         }
 
-        $parent = $tree->ancestorsOf($this->place)->last();
+        $parent = $this->parentPlace;
 
         $deletePlace->handle($this->place);
 
-        session()->flash('message', __('places.deleted', ['name' => $this->place->name]));
-
-        if ($parent instanceof Place) {
-            $this->redirectRoute('places.show', [$this->household, $parent], navigate: true);
-
-            return;
-        }
-
-        $this->redirectRoute('places.index', $this->household, navigate: true);
+        $this->redirectToPlaces(
+            $this->household,
+            __('places.deleted', ['name' => $this->place->name]),
+            $parent,
+        );
     }
 
-    /**
-     * Render the component.
-     */
     public function render(): View
     {
         return view('livewire.places.show')
             ->title($this->place->name);
-    }
-
-    /**
-     * Fail when another place next to this one already has the name, ignoring case.
-     *
-     * The check runs in PHP, so it is the same on SQLite and PostgreSQL.
-     */
-    private function ensureNameIsFreeAmongSiblings(string $attribute, string $value, Closure $fail): void
-    {
-        $tree = PlaceTree::for($this->household);
-        $parent = $tree->ancestorsOf($this->place)->last();
-
-        $siblings = $parent instanceof Place
-            ? $tree->childrenOf($parent)
-            : $tree->roots();
-
-        $isTaken = $siblings
-            ->reject(fn (Place $sibling): bool => $sibling->is($this->place))
-            ->contains(fn (Place $sibling): bool => Str::lower($sibling->name) === Str::lower($value));
-
-        if ($isTaken) {
-            $fail('places.name_taken')->translate(['name' => $value]);
-        }
     }
 }

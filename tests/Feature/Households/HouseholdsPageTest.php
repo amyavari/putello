@@ -64,8 +64,8 @@ test('a household with only its owner shows one member', function (): void {
 });
 
 test('a member sees their role', function (Role $role, string $shownRole): void {
-    $user = User::factory()->create();
-    Household::factory()->create(['name' => 'Home'])->members()->attach($user, ['role' => $role]);
+    $household = Household::factory()->create(['name' => 'Home']);
+    $user = memberOf($household, $role);
 
     Livewire::actingAs($user)
         ->test(Index::class)
@@ -76,10 +76,9 @@ test('a member sees their role', function (Role $role, string $shownRole): void 
 ]);
 
 test('a member who set a label sees the label instead of the name', function (): void {
-    $user = User::factory()->create();
     $household = Household::factory()->create(['name' => 'Lake house']);
     $household->members()->attach(User::factory()->count(2)->create(), ['role' => Role::Viewer]);
-    $household->members()->attach($user, ['role' => Role::Editor, 'label' => 'Parents’ home']);
+    $user = memberOf($household, Role::Editor, label: 'Parents’ home');
 
     Livewire::actingAs($user)
         ->test(Index::class)
@@ -91,7 +90,7 @@ test('a member who set a label sees the label instead of the name', function ():
 test('a label set by another member is not shown', function (): void {
     $user = User::factory()->create();
     $household = Household::factory()->for($user, 'owner')->create(['name' => 'Home']);
-    $household->members()->attach(User::factory()->create(), ['role' => Role::Viewer, 'label' => 'Parents’ home']);
+    memberOf($household, Role::Viewer, label: 'Parents’ home');
 
     Livewire::actingAs($user)
         ->test(Index::class)
