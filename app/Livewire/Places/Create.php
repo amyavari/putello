@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace App\Livewire\Places;
 
 use App\Actions\CreatePlaceAction;
+use App\Livewire\Concerns\ValidatesPlaceName;
 use App\Models\Household;
 use App\Models\Place;
 use App\Support\PlaceTree;
-use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 final class Create extends Component
 {
+    use ValidatesPlaceName;
+
     public Household $household;
 
     /**
@@ -64,22 +65,7 @@ final class Create extends Component
     {
         $this->authorize('edit', $this->household);
 
-        $this->name = Str::trim($this->name);
-
-        $this->validate(
-            rules: [
-                'name' => [
-                    'bail',
-                    'required',
-                    'string',
-                    'max:255',
-                    $this->ensureNameIsFreeAmongSiblings(...),
-                ],
-            ],
-            messages: [
-                'name.required' => __('places.name_required'),
-            ],
-        );
+        $this->validatePlaceName($this->parent);
 
         $place = $createPlace->handle($this->household, $this->parent, $this->name);
 
@@ -98,23 +84,5 @@ final class Create extends Component
     {
         return view('livewire.places.create')
             ->title(__('places.add'));
-    }
-
-    /**
-     * The check runs in PHP, so it is the same on SQLite and PostgreSQL.
-     */
-    private function ensureNameIsFreeAmongSiblings(string $attribute, string $value, Closure $fail): void
-    {
-        $tree = PlaceTree::for($this->household);
-
-        $siblings = $this->parent instanceof Place
-            ? $tree->childrenOf($this->parent)
-            : $tree->roots();
-
-        $isTaken = $siblings->contains(fn (Place $sibling): bool => Str::lower($sibling->name) === Str::lower($value));
-
-        if ($isTaken) {
-            $fail('places.name_taken')->translate(['name' => $value]);
-        }
     }
 }

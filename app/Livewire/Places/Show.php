@@ -6,18 +6,19 @@ namespace App\Livewire\Places;
 
 use App\Actions\DeletePlaceAction;
 use App\Actions\RenamePlaceAction;
+use App\Livewire\Concerns\ValidatesPlaceName;
 use App\Models\Household;
 use App\Models\Place;
 use App\Support\PlaceTree;
-use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 final class Show extends Component
 {
+    use ValidatesPlaceName;
+
     public Household $household;
 
     public Place $place;
@@ -51,21 +52,9 @@ final class Show extends Component
     {
         $this->authorize('edit', $this->household);
 
-        $this->name = Str::trim($this->name);
-
-        $this->validate(
-            rules: [
-                'name' => [
-                    'bail',
-                    'required',
-                    'string',
-                    'max:255',
-                    $this->ensureNameIsFreeAmongSiblings(...),
-                ],
-            ],
-            messages: [
-                'name.required' => __('places.name_required'),
-            ],
+        $this->validatePlaceName(
+            PlaceTree::for($this->household)->parentOf($this->place),
+            except: $this->place,
         );
 
         $renamePlace->handle($this->place, $this->name);
@@ -90,7 +79,7 @@ final class Show extends Component
             return;
         }
 
-        $parent = $tree->ancestorsOf($this->place)->last();
+        $parent = $tree->parentOf($this->place);
 
         $deletePlace->handle($this->place);
 
@@ -109,26 +98,5 @@ final class Show extends Component
     {
         return view('livewire.places.show')
             ->title($this->place->name);
-    }
-
-    /**
-     * The check runs in PHP, so it is the same on SQLite and PostgreSQL.
-     */
-    private function ensureNameIsFreeAmongSiblings(string $attribute, string $value, Closure $fail): void
-    {
-        $tree = PlaceTree::for($this->household);
-        $parent = $tree->ancestorsOf($this->place)->last();
-
-        $siblings = $parent instanceof Place
-            ? $tree->childrenOf($parent)
-            : $tree->roots();
-
-        $isTaken = $siblings
-            ->reject(fn (Place $sibling): bool => $sibling->is($this->place))
-            ->contains(fn (Place $sibling): bool => Str::lower($sibling->name) === Str::lower($value));
-
-        if ($isTaken) {
-            $fail('places.name_taken')->translate(['name' => $value]);
-        }
     }
 }

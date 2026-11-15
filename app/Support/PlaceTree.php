@@ -55,6 +55,25 @@ final readonly class PlaceTree
         return $this->childrenByParentId->get($place->id, new Collection);
     }
 
+    public function parentOf(Place $place): ?Place
+    {
+        if ($this->isAtTheTop($place)) {
+            return null;
+        }
+
+        return $this->placesById->get($place->parent_id);
+    }
+
+    /**
+     * The check runs in PHP, so it is the same on SQLite and PostgreSQL.
+     */
+    public function hasSiblingNamed(?Place $parent, string $name, ?Place $except = null): bool
+    {
+        return $this->placesDirectlyIn($parent)
+            ->reject(fn (Place $place): bool => $place->is($except))
+            ->contains(fn (Place $place): bool => $this->isSameName($place->name, $name));
+    }
+
     /**
      * @return Collection<int, Place>
      */
@@ -82,5 +101,25 @@ final readonly class PlaceTree
             ->pluck('name');
 
         return $names->implode(__('places.path_separator'));
+    }
+
+    private function isAtTheTop(Place $place): bool
+    {
+        return $place->parent_id === null;
+    }
+
+    /**
+     * @return Collection<int, Place>
+     */
+    private function placesDirectlyIn(?Place $parent): Collection
+    {
+        return $parent instanceof Place
+            ? $this->childrenOf($parent)
+            : $this->roots();
+    }
+
+    private function isSameName(string $name, string $otherName): bool
+    {
+        return Str::lower($name) === Str::lower($otherName);
     }
 }
