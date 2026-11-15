@@ -90,6 +90,19 @@ test('a place with no places inside shows a message', function (): void {
         ->assertSee('No places inside');
 });
 
+test('each place inside shows how many items are in it at any depth', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+    placeInside($kitchen, 'Box');
+    $cupboard = placeInside($kitchen, 'Cupboard');
+    itemIn($cupboard, 'Plate');
+    itemIn(placeInside($cupboard, 'Drawer'), 'Spoon');
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'place' => $kitchen])
+        ->assertSeeInOrder(['Box', 'Empty', 'Cupboard', '2 items']);
+});
+
 test('the items in the place are listed with the path of their place', function (): void {
     $household = Household::factory()->create();
     $kitchen = placeIn($household, 'Kitchen');

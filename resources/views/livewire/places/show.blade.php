@@ -99,6 +99,8 @@
                         <flux:text>{{ $this->tree->pathOf($child) }}</flux:text>
                     </div>
 
+                    <x-places.number-of-items :count="$this->tree->numberOfItemsInside($child)" />
+
                     <flux:icon.chevron-right variant="micro" class="text-zinc-400 rtl:rotate-180" />
                 </a>
             @endforeach

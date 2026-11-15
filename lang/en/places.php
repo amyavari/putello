@@ -21,6 +21,7 @@ return [
     'path_separator' => ' › ',
     'items_in_this_place' => 'Items in this place',
     'nothing_here_yet' => 'Nothing here yet',
+    'number_of_items' => '{0} Empty|{1} :count item|[2,*] :count items',
     'places_inside' => 'Places inside',
     'no_places_inside' => 'No places inside',
     'more_actions' => 'More actions',
