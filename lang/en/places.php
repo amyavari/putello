@@ -22,4 +22,8 @@ return [
     'places_inside' => 'Places inside',
     'no_places_inside' => 'No places inside',
     'more_actions' => 'More actions',
+    'rename' => 'Rename',
+    'rename_place' => 'Rename place',
+    'rename_description' => 'The items and places inside stay where they are.',
+    'renamed' => 'Renamed to :name.',
 ];

@@ -27,6 +27,9 @@
                 <flux:button icon="ellipsis-horizontal" square :aria-label="__('places.more_actions')" />
 
                 <flux:menu>
+                    <flux:modal.trigger name="rename-place">
+                        <flux:menu.item icon="pencil-square">{{ __('places.rename') }}</flux:menu.item>
+                    </flux:modal.trigger>
                 </flux:menu>
             </flux:dropdown>
         @endcan
@@ -67,4 +70,25 @@
             @endforeach
         </flux:card>
     @endif
+
+    @can('edit', $household)
+        <flux:modal name="rename-place" class="w-full md:w-[30rem]">
+            <form wire:submit="rename" class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('places.rename_place') }}</flux:heading>
+                    <flux:text class="mt-1">{{ __('places.rename_description') }}</flux:text>
+                </div>
+
+                <flux:input wire:model="name" :label="__('places.name')" autocomplete="off" />
+
+                <div class="flex gap-3">
+                    <flux:button type="submit" variant="primary">{{ __('places.rename') }}</flux:button>
+
+                    <flux:modal.close>
+                        <flux:button variant="ghost">{{ __('places.cancel') }}</flux:button>
+                    </flux:modal.close>
+                </div>
+            </form>
+        </flux:modal>
+    @endcan
 </section>
