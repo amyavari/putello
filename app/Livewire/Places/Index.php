@@ -31,12 +31,7 @@ final class Index extends Component
     #[Computed]
     public function householdName(): string
     {
-        $membership = Auth::user()
-            ->households()
-            ->findOrFail($this->household->id)
-            ->membership;
-
-        return $membership->label ?? $this->household->name;
+        return $this->household->nameFor(Auth::user());
     }
 
     /**

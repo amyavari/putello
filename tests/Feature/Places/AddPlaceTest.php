@@ -94,7 +94,19 @@ test('the form shows the place the new place goes inside', function (): void {
         ->assertSeeInOrder(['Inside', 'Kitchen']);
 });
 
-test('after adding a place the app opens the places page with a message', function (): void {
+test('the breadcrumb shows the household and the places above the new place', function (): void {
+    $household = Household::factory()->create(['name' => 'Home']);
+    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Left cupboard']);
+
+    Livewire::withQueryParams(['inside' => $cupboard->id])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->assertSeeInOrder(['Home', 'Kitchen', 'Left cupboard', 'Add place'])
+        ->assertSeeHtml(sprintf('href="%s"', route('places.show', [$household, $kitchen])));
+});
+
+test('after adding a place at the top the app opens the places page with a message', function (): void {
     $household = Household::factory()->create();
 
     Livewire::actingAs($household->owner)
@@ -104,6 +116,20 @@ test('after adding a place the app opens the places page with a message', functi
         ->assertRedirect(route('places.index', $household));
 
     expect(session('message'))->toBe('Kitchen added.');
+});
+
+test('after adding a place inside another place the app opens that place with a message', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+
+    Livewire::withQueryParams(['inside' => $kitchen->id])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->set('name', 'Left cupboard')
+        ->call('add')
+        ->assertRedirect(route('places.show', [$household, $kitchen]));
+
+    expect(session('message'))->toBe('Left cupboard added.');
 });
 
 test('the name is trimmed', function (): void {

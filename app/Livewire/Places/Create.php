@@ -11,6 +11,7 @@ use App\Support\PlaceTree;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -47,16 +48,28 @@ final class Create extends Component
     #[Computed]
     public function householdName(): string
     {
-        $membership = Auth::user()
-            ->households()
-            ->findOrFail($this->household->id)
-            ->membership;
-
-        return $membership->label ?? $this->household->name;
+        return $this->household->nameFor(Auth::user());
     }
 
     /**
-     * Add the place, then open the Places page with a message.
+     * Get the places above the new place, from the top down: the parent and its ancestors.
+     *
+     * @return Collection<int, Place>
+     */
+    #[Computed]
+    public function placesAbove(): Collection
+    {
+        if (! $this->parent instanceof Place) {
+            return new Collection;
+        }
+
+        return PlaceTree::for($this->household)
+            ->ancestorsOf($this->parent)
+            ->push($this->parent);
+    }
+
+    /**
+     * Add the place, then open the page of the place it went inside (or Places) with a message.
      */
     public function add(CreatePlaceAction $createPlace): void
     {
@@ -82,6 +95,12 @@ final class Create extends Component
         $place = $createPlace->handle($this->household, $this->parent, $this->name);
 
         session()->flash('message', __('places.added', ['name' => $place->name]));
+
+        if ($this->parent instanceof Place) {
+            $this->redirectRoute('places.show', [$this->household, $this->parent], navigate: true);
+
+            return;
+        }
 
         $this->redirectRoute('places.index', $this->household, navigate: true);
     }

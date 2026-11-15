@@ -40,7 +40,7 @@
 
                     <ul x-show="open">
                         @foreach ($this->tree->roots() as $place)
-                            <x-places.tree-node :$place :tree="$this->tree" :depth="1" wire:key="place-{{ $place->id }}" />
+                            <x-places.tree-node :$household :$place :tree="$this->tree" :depth="1" wire:key="place-{{ $place->id }}" />
                         @endforeach
                     </ul>
                 </li>

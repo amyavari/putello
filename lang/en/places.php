@@ -18,4 +18,8 @@ return [
     'inside' => 'Inside',
     'added' => ':name added.',
     'cancel' => 'Cancel',
+    'path_separator' => ' › ',
+    'places_inside' => 'Places inside',
+    'no_places_inside' => 'No places inside',
+    'more_actions' => 'More actions',
 ];

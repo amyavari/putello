@@ -1,4 +1,4 @@
-@props(['name', 'depth', 'hasChildren'])
+@props(['name', 'depth', 'hasChildren', 'href' => null])
 
 <div
     class="flex min-h-11 items-center border-b border-zinc-200 pe-4 dark:border-zinc-700"
@@ -20,5 +20,9 @@
         <span aria-hidden="true" class="size-8 shrink-0"></span>
     @endif
 
-    <span class="min-w-0 flex-1 truncate">{{ $name }}</span>
+    @if ($href !== null)
+        <a href="{{ $href }}" wire:navigate class="min-w-0 flex-1 truncate hover:underline">{{ $name }}</a>
+    @else
+        <span class="min-w-0 flex-1 truncate">{{ $name }}</span>
+    @endif
 </div>

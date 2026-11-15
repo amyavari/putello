@@ -1,13 +1,5 @@
 <section class="w-full max-w-xl">
-    <flux:breadcrumbs>
-        <flux:breadcrumbs.item :href="route('places.index', $household)" wire:navigate>
-            {{ $this->householdName }}
-        </flux:breadcrumbs.item>
-
-        @if ($parent !== null)
-            <flux:breadcrumbs.item>{{ $parent->name }}</flux:breadcrumbs.item>
-        @endif
-    </flux:breadcrumbs>
+    <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->placesAbove" />
 
     <flux:heading size="xl" level="1" class="mt-2">{{ __('places.add') }}</flux:heading>
 
@@ -22,7 +14,12 @@
         <div class="flex gap-3">
             <flux:button type="submit" variant="primary" icon="plus" class="flex-[7]">{{ __('places.add') }}</flux:button>
 
-            <flux:button :href="route('places.index', $household)" wire:navigate variant="ghost" class="flex-[3]">
+            <flux:button
+                :href="$parent !== null ? route('places.show', [$household, $parent]) : route('places.index', $household)"
+                wire:navigate
+                variant="ghost"
+                class="flex-[3]"
+            >
                 {{ __('places.cancel') }}
             </flux:button>
         </div>

@@ -105,6 +105,17 @@ test('places of another household are not listed', function (): void {
         ->assertDontSee('Garage');
 });
 
+test('each place in the tree opens its place page', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
+    $cupboard = Place::factory()->inside($kitchen)->create(['name' => 'Cupboard']);
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeHtml(sprintf('href="%s"', route('places.show', [$household, $kitchen])))
+        ->assertSeeHtml(sprintf('href="%s"', route('places.show', [$household, $cupboard])));
+});
+
 test('the places are loaded with one query at any depth', function (): void {
     $household = Household::factory()->create();
     $kitchen = Place::factory()->for($household)->create(['name' => 'Kitchen']);
