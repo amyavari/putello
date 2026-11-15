@@ -43,6 +43,7 @@ return RectorConfig::configure()
         SeparateMultiUseImportsRector::class,
         ChainExpectCallsRector::class,
         AddHasFactoryToModelsRector::class => [
+            __DIR__.'/app/Models/Activity.php',
             __DIR__.'/app/Models/HouseholdUser.php',
         ],
     ])

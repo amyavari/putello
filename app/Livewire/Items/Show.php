@@ -11,7 +11,9 @@ use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
+use App\Models\User;
 use App\Support\PlaceTree;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -43,7 +45,7 @@ final class Show extends Component
      * $placeId null is the household, which can't hold items.
      */
     #[On('place-chosen')]
-    public function move(MoveItemAction $moveItem, ?string $placeId): void
+    public function move(#[CurrentUser] User $user, MoveItemAction $moveItem, ?string $placeId): void
     {
         $this->authorize('edit', $this->household);
 
@@ -55,7 +57,7 @@ final class Show extends Component
             return;
         }
 
-        $moveItem->handle($this->item, $newPlace);
+        $moveItem->handle($user, $this->item, $newPlace);
 
         session()->flash('message', __('items.moved', [
             'name' => $this->item->name,
@@ -65,11 +67,11 @@ final class Show extends Component
         $this->redirectRoute('items.show', [$this->household, $this->item], navigate: true);
     }
 
-    public function archive(ArchiveItemAction $archiveItem): void
+    public function archive(#[CurrentUser] User $user, ArchiveItemAction $archiveItem): void
     {
         $this->authorize('edit', $this->household);
 
-        $oldPlace = $archiveItem->handle($this->item);
+        $oldPlace = $archiveItem->handle($user, $this->item);
 
         session()->flash('message', __('items.archived', ['name' => $this->item->name]));
         session()->flash('archived_item_id', $this->item->id);

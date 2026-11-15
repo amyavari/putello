@@ -10,7 +10,9 @@ use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Livewire\Concerns\ValidatesPlaceName;
 use App\Models\Household;
 use App\Models\Place;
+use App\Models\User;
 use App\Support\PlaceTree;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -74,13 +76,13 @@ final class Create extends Component
         $this->modal('choose-place')->close();
     }
 
-    public function add(CreatePlaceAction $createPlace): void
+    public function add(#[CurrentUser] User $user, CreatePlaceAction $createPlace): void
     {
         $this->authorize('edit', $this->household);
 
         $this->validatePlaceName($this->parent);
 
-        $place = $createPlace->handle($this->household, $this->parent, $this->name);
+        $place = $createPlace->handle($user, $this->household, $this->parent, $this->name);
 
         $this->redirectToPlaces(
             $this->household,

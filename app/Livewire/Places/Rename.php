@@ -8,7 +8,9 @@ use App\Actions\RenamePlaceAction;
 use App\Livewire\Concerns\ValidatesPlaceName;
 use App\Models\Household;
 use App\Models\Place;
+use App\Models\User;
 use App\Support\PlaceTree;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -30,7 +32,7 @@ final class Rename extends Component
         $this->name = $this->place->name;
     }
 
-    public function rename(RenamePlaceAction $renamePlace): void
+    public function rename(#[CurrentUser] User $user, RenamePlaceAction $renamePlace): void
     {
         $this->authorize('edit', $this->household);
 
@@ -38,7 +40,7 @@ final class Rename extends Component
 
         $this->validatePlaceName($parent, except: $this->place);
 
-        $renamePlace->handle($this->place, $this->name);
+        $renamePlace->handle($user, $this->place, $this->name);
 
         $this->modal('rename-place')->close();
 

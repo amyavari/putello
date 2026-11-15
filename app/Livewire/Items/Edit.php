@@ -10,7 +10,9 @@ use App\Livewire\Concerns\ValidatesItem;
 use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
+use App\Models\User;
 use App\Support\PlaceTree;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -45,13 +47,13 @@ final class Edit extends Component
         return PlaceTree::for($this->household)->placesDownTo($this->item->place);
     }
 
-    public function save(EditItemAction $editItem): void
+    public function save(#[CurrentUser] User $user, EditItemAction $editItem): void
     {
         $this->authorize('edit', $this->household);
 
         $this->validateItem();
 
-        $editItem->handle($this->item, $this->name, $this->notes);
+        $editItem->handle($user, $this->item, $this->name, $this->notes);
 
         session()->flash('message', __('items.saved', ['name' => $this->item->name]));
 

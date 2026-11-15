@@ -9,6 +9,8 @@ use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -40,6 +42,7 @@ final class Index extends Component
     {
         return $this->household->items()
             ->onlyTrashed()
+            ->with('lastArchiveEntry')
             ->latest('deleted_at')
             ->get();
     }
@@ -61,6 +64,14 @@ final class Index extends Component
             : $archivedAt->translatedFormat('M j, Y');
     }
 
+    /**
+     * The path of the place the item was in, or null when no entry was recorded.
+     */
+    public function wasIn(Item $item): ?string
+    {
+        return $item->lastArchiveEntry?->from_value;
+    }
+
     public function chooseItemToRestore(string $itemId): void
     {
         $this->itemToRestoreId = $itemId;
@@ -72,7 +83,7 @@ final class Index extends Component
      * $placeId null is the household, which can't hold items.
      */
     #[On('place-chosen')]
-    public function restore(RestoreItemAction $restoreItem, ?string $placeId): void
+    public function restore(#[CurrentUser] User $user, RestoreItemAction $restoreItem, ?string $placeId): void
     {
         $this->authorize('edit', $this->household);
 
@@ -88,7 +99,7 @@ final class Index extends Component
             return;
         }
 
-        $restoreItem->handle($item, $place);
+        $restoreItem->handle($user, $item, $place);
 
         session()->flash('message', __('items.restored', [
             'name' => $item->name,

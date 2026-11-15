@@ -19,6 +19,9 @@
                 <flux:card wire:key="archived-item-{{ $item->id }}" class="flex items-start gap-3">
                     <div class="min-w-0 flex-1">
                         <flux:heading>{{ $item->name }}</flux:heading>
+                        @if ($this->wasIn($item))
+                            <flux:text class="mt-1">{{ __('archived.was_in', ['path' => $this->wasIn($item)]) }}</flux:text>
+                        @endif
                         <flux:text class="mt-1">{{ __('archived.archived_on', ['date' => $this->archivedOn($item)]) }}</flux:text>
                     </div>
 

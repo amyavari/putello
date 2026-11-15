@@ -13,7 +13,9 @@ use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
+use App\Models\User;
 use App\Support\PlaceTree;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -137,7 +139,7 @@ final class Show extends Component
      * $placeId null is the top of the household.
      */
     #[On('place-chosen')]
-    public function move(MovePlaceAction $movePlace, ?string $placeId): void
+    public function move(#[CurrentUser] User $user, MovePlaceAction $movePlace, ?string $placeId): void
     {
         $this->authorize('edit', $this->household);
 
@@ -151,7 +153,7 @@ final class Show extends Component
             return;
         }
 
-        $movePlace->handle($this->place, $newParent);
+        $movePlace->handle($user, $this->place, $newParent);
 
         $this->redirectToPlaces(
             $this->household,
@@ -163,7 +165,7 @@ final class Show extends Component
         );
     }
 
-    public function undoArchive(RestoreItemAction $restoreItem): void
+    public function undoArchive(#[CurrentUser] User $user, RestoreItemAction $restoreItem): void
     {
         $this->authorize('edit', $this->household);
 
@@ -171,7 +173,7 @@ final class Show extends Component
             ->onlyTrashed()
             ->findOrFail($this->archivedItemId);
 
-        $restoreItem->handle($item, $this->place);
+        $restoreItem->handle($user, $item, $this->place);
 
         $this->archivedItemId = null;
 
@@ -183,7 +185,7 @@ final class Show extends Component
         ]);
     }
 
-    public function delete(DeletePlaceAction $deletePlace): void
+    public function delete(#[CurrentUser] User $user, DeletePlaceAction $deletePlace): void
     {
         $this->authorize('edit', $this->household);
 
@@ -195,7 +197,7 @@ final class Show extends Component
 
         $parent = $this->parentPlace;
 
-        $deletePlace->handle($this->place);
+        $deletePlace->handle($user, $this->place);
 
         $this->redirectToPlaces(
             $this->household,
