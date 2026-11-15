@@ -90,6 +90,52 @@ test('a place with no places inside shows a message', function (): void {
         ->assertSee('No places inside');
 });
 
+test('the items in the place are listed with the path of their place', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+    $drawer = placeInside($kitchen, 'Drawer 1');
+    $spoon = itemIn($drawer, 'Spoon');
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'place' => $drawer])
+        ->assertSeeInOrder(['Items in this place', 'Spoon', 'Kitchen › Drawer 1'])
+        ->assertSeeHtml(sprintf('href="%s"', route('items.show', [$household, $spoon])));
+});
+
+test('the items are sorted by name ignoring case', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+    itemIn($kitchen, 'spoon');
+    itemIn($kitchen, 'Fork');
+    itemIn($kitchen, 'knife');
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'place' => $kitchen])
+        ->assertSeeInOrder(['Fork', 'knife', 'spoon']);
+});
+
+test('only the items directly in the place are listed', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+    $drawer = placeInside($kitchen, 'Drawer 1');
+    itemIn($kitchen, 'Kettle');
+    itemIn($drawer, 'Spoon');
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'place' => $kitchen])
+        ->assertSee('Kettle')
+        ->assertDontSee('Spoon');
+});
+
+test('a place with no items shows a message', function (): void {
+    $household = Household::factory()->create();
+    $place = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'place' => $place])
+        ->assertSee('Nothing here yet');
+});
+
 test('the owner and editors see the add place button and more actions', function (Role $role): void {
     $household = Household::factory()->create();
     $member = memberOf($household, $role);

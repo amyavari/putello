@@ -10,10 +10,12 @@ use App\Livewire\Concerns\RedirectsToPlaces;
 use App\Livewire\Concerns\ShowsFlashMessage;
 use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
+use App\Models\Item;
 use App\Models\Place;
 use App\Support\PlaceTree;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -21,6 +23,7 @@ use Livewire\Component;
 /**
  * @property-read PlaceTree $tree
  * @property-read string $householdName
+ * @property-read Collection<int, Item> $itemsInside
  * @property-read Collection<int, Place> $placesInside
  * @property-read bool $hasPlacesInside
  * @property-read string $placesInsideErrorMessage
@@ -38,6 +41,20 @@ final class Show extends Component
     public function tree(): PlaceTree
     {
         return PlaceTree::for($this->household);
+    }
+
+    /**
+     * Only the items directly in this place, sorted by name ignoring case.
+     *
+     * @return Collection<int, Item>
+     */
+    #[Computed]
+    public function itemsInside(): Collection
+    {
+        return $this->place->items()
+            ->get()
+            ->sortBy(fn (Item $item): string => Str::lower($item->name))
+            ->values();
     }
 
     /**

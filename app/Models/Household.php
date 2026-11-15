@@ -50,6 +50,14 @@ final class Household extends Model
         return $this->hasMany(Place::class);
     }
 
+    /**
+     * @return HasMany<Item, $this>
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(Item::class);
+    }
+
     public function hasMember(User $user): bool
     {
         return $this->members()

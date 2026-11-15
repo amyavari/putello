@@ -37,6 +37,32 @@
         @endcan
     </div>
 
+    <flux:heading size="lg" level="2" class="mt-6">{{ __('places.items_in_this_place') }}</flux:heading>
+
+    @if ($this->itemsInside->isEmpty())
+        <flux:card class="mt-2 text-center">
+            <flux:text>{{ __('places.nothing_here_yet') }}</flux:text>
+        </flux:card>
+    @else
+        <flux:card class="mt-2 divide-y divide-zinc-200 p-0 dark:divide-zinc-700">
+            @foreach ($this->itemsInside as $item)
+                <a
+                    href="{{ route('items.show', [$household, $item]) }}"
+                    wire:key="item-{{ $item->id }}"
+                    wire:navigate
+                    class="flex items-center gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+                >
+                    <div class="min-w-0 flex-1">
+                        <flux:heading>{{ $item->name }}</flux:heading>
+                        <flux:text>{{ $this->tree->pathOf($place) }}</flux:text>
+                    </div>
+
+                    <flux:icon.chevron-right variant="micro" class="text-zinc-400 rtl:rotate-180" />
+                </a>
+            @endforeach
+        </flux:card>
+    @endif
+
     <div class="mt-6 flex items-center justify-between gap-3">
         <flux:heading size="lg" level="2">{{ __('places.places_inside') }}</flux:heading>
 
