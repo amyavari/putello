@@ -14,7 +14,6 @@ return [
     'name_hint' => 'For example Home, Office or Dorm.',
     'added' => ':name added.',
     'cancel' => 'Cancel',
-    'dismiss' => 'Dismiss',
     'member_count' => '{1} :count member|[2,*] :count members',
     'roles' => [
         'owner' => 'Owner',

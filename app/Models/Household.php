@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Household extends Model
 {
@@ -38,5 +39,27 @@ final class Household extends Model
             ->as('membership')
             ->withPivot('role', 'label')
             ->withTimestamps();
+    }
+
+    /**
+     * Get all the places of the household, at any depth.
+     *
+     * @return HasMany<Place, $this>
+     */
+    public function places(): HasMany
+    {
+        return $this->hasMany(Place::class);
+    }
+
+    /**
+     * Get the household's name as the user sees it: their label if they set one, otherwise the name.
+     */
+    public function nameFor(User $user): string
+    {
+        $membership = $user->households()
+            ->findOrFail($this->id)
+            ->membership;
+
+        return $membership->label ?? $this->name;
     }
 }
