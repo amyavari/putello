@@ -21,7 +21,7 @@
 
                     <flux:menu.separator />
 
-                    @if (! $this->hasPlacesInside)
+                    @if ($this->isEmpty)
                         <flux:modal.trigger name="delete-place">
                             <flux:menu.item icon="trash" variant="danger" class="text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-current!">{{ __('places.delete') }}</flux:menu.item>
                         </flux:modal.trigger>
@@ -29,7 +29,7 @@
                         <flux:menu.item icon="trash" variant="danger" class="text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-current!" disabled>{{ __('places.delete') }}</flux:menu.item>
 
                         <flux:text size="sm" class="max-w-56 px-2 pb-1.5">
-                            {{ $this->placesInsideErrorMessage }}
+                            {{ $this->notEmptyErrorMessage }}
                         </flux:text>
                     @endif
                 </flux:menu>
