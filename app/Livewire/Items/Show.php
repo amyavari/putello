@@ -72,6 +72,7 @@ final class Show extends Component
         $oldPlace = $archiveItem->handle($this->item);
 
         session()->flash('message', __('items.archived', ['name' => $this->item->name]));
+        session()->flash('archived_item_id', $this->item->id);
 
         $this->redirectRoute('places.show', [$this->household, $oldPlace], navigate: true);
     }

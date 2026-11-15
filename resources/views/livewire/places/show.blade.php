@@ -1,5 +1,5 @@
 <section class="w-full max-w-3xl">
-    <x-flash-message :$message />
+    <x-flash-message :$message :undo="$archivedItemId !== null ? 'undoArchive' : null" />
 
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->tree->placesAbove($place)" />
 
