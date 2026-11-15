@@ -15,6 +15,10 @@
                         <flux:menu.item icon="pencil-square">{{ __('places.rename') }}</flux:menu.item>
                     </flux:modal.trigger>
 
+                    <flux:modal.trigger name="move-place">
+                        <flux:menu.item icon="arrows-right-left">{{ __('places.move') }}</flux:menu.item>
+                    </flux:modal.trigger>
+
                     <flux:menu.separator />
 
                     @if (! $this->hasPlacesInside)
@@ -85,6 +89,14 @@
                     </flux:modal.close>
                 </div>
             </form>
+        </flux:modal>
+
+        <flux:modal name="move-place" class="w-full md:w-[30rem]">
+            <div class="space-y-4">
+                <livewire:places.picker :$household :$place :key="'picker-'.$place->name" lazy />
+
+                <flux:error name="placeId" />
+            </div>
         </flux:modal>
 
         <flux:modal name="delete-place" class="w-full md:w-[30rem]">

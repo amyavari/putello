@@ -20,7 +20,9 @@
         <span aria-hidden="true" class="size-8 shrink-0"></span>
     @endif
 
-    @if ($href !== null)
+    @if ($slot->isNotEmpty())
+        {{ $slot }}
+    @elseif ($href !== null)
         <a href="{{ $href }}" wire:navigate class="min-w-0 flex-1 truncate hover:underline">{{ $name }}</a>
     @else
         <span class="min-w-0 flex-1 truncate">{{ $name }}</span>
