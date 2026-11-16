@@ -244,3 +244,9 @@ select:focus[data-flux-control] {
     border-color: transparent;
     color: var(--on-accent-soft);
 }
+
+/* The account avatar is a terracotta-tinted circle, like the boards. */
+[data-flux-sidebar-profile] [data-flux-avatar] {
+    background-color: var(--accent-soft);
+    color: var(--on-accent-soft);
+}

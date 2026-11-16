@@ -3,7 +3,8 @@
     <flux:sidebar.profile
         :name="auth()->user()->name"
         :initials="auth()->user()->initials()"
-        icon:trailing="chevrons-up-down"
+        :chevron="false"
+        circle
         :aria-label="__('shell.account')"
         data-test="sidebar-menu-button"
     />
@@ -17,16 +18,15 @@
 
         <form method="POST" action="{{ route('logout') }}" class="w-full">
             @csrf
-            <flux:menu.item
+            <x-menu.danger-item
                 as="button"
                 type="submit"
                 icon="arrow-right-start-on-rectangle"
-                variant="danger"
                 class="w-full cursor-pointer"
                 data-test="logout-button"
             >
                 {{ __('shell.log_out') }}
-            </flux:menu.item>
+            </x-menu.danger-item>
         </form>
     </flux:menu>
 </flux:dropdown>
