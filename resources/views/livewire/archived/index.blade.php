@@ -24,7 +24,7 @@
                             <x-archived.detail :label="__('archived.was_in')">{{ $this->wasIn($item) }}</x-archived.detail>
                         @endif
 
-                        <x-archived.detail :label="__('archived.archived_on')">{{ $this->archivedOn($item) }}</x-archived.detail>
+                        <x-archived.detail :label="__('archived.archived_on')">{{ $this->archivedOn($item) }}{{ $this->wasMarkedLost($item) ? __('archived.marked_lost') : '' }}</x-archived.detail>
                     </div>
 
                     @can('edit', $household)

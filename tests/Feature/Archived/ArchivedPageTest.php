@@ -5,9 +5,11 @@ declare(strict_types=1);
 use App\Enums\Role;
 use App\Livewire\Archived\Index;
 use App\Livewire\Items\Show;
+use App\Livewire\Loans\Close;
 use App\Livewire\Places;
 use App\Models\Household;
 use App\Models\Item;
+use App\Models\Loan;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -116,6 +118,65 @@ test('an archived item shows the place it was in', function (): void {
         ->assertSeeInOrder(['Kettle', 'Was in:', 'Kitchen › Left cupboard', 'Archived:']);
 });
 
+test('a lost item shows the place it was in', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeInside(placeIn($household, 'Storage room'), 'Shelf A'), 'Drill');
+    closeLoanAsLost($household, $drill);
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSeeInOrder(['Drill', 'Was in:', 'Storage room › Shelf A', 'Archived:']);
+});
+
+test('a lost item shows that it was marked lost', function (): void {
+    travelTo('2026-11-02 10:00:00');
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    closeLoanAsLost($household, $drill);
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSee('Nov 2, marked Lost');
+});
+
+test('an item archived the normal way does not show marked lost', function (): void {
+    $household = Household::factory()->create();
+    $kettle = itemIn(placeIn($household, 'Kitchen'), 'Kettle');
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $kettle])
+        ->call('archive');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSee('Kettle')
+        ->assertDontSee('marked Lost');
+});
+
+test('a lost item that was restored and archived again does not show marked lost', function (): void {
+    travelTo('2026-11-02 10:00:00');
+    $household = Household::factory()->create();
+    $storageRoom = placeIn($household, 'Storage room');
+    $drill = itemIn($storageRoom, 'Drill');
+    closeLoanAsLost($household, $drill);
+
+    travelTo('2026-11-05 10:00:00');
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->call('chooseItemToRestore', $drill->id)
+        ->call('restore', $storageRoom->id);
+
+    travelTo('2026-11-08 10:00:00');
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $drill->fresh()])
+        ->call('archive');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->assertSee('Drill')
+        ->assertDontSee('marked Lost');
+});
+
 test('a member sees a message when nothing is archived', function (): void {
     $household = Household::factory()->create();
 
@@ -159,3 +220,22 @@ test('the places page links to the archived page', function (): void {
         ->assertSee('Archived items and borrowers')
         ->assertSeeHtml(sprintf('href="%s"', route('archived.index', $household)));
 });
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Lends the item and closes the loan as Lost through the Close loan modal, which archives the item.
+ */
+function closeLoanAsLost(Household $household, Item $item): void
+{
+    $loan = Loan::factory()->for($item)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->set('closedAs', 'lost')
+        ->call('close');
+}
