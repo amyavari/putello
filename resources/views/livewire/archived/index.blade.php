@@ -1,34 +1,36 @@
-<section class="w-full max-w-3xl">
+<x-page>
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="[]" />
 
-    <flux:heading size="xl" level="1" class="mt-2">{{ __('archived.title') }}</flux:heading>
+    <x-page.title class="mt-1">{{ __('archived.title') }}</x-page.title>
 
     @if ($this->isEmpty())
-        <flux:card class="mt-6 text-center">
-            <flux:heading>{{ __('archived.empty.heading') }}</flux:heading>
-            <flux:text class="mt-1">{{ __('archived.empty.text') }}</flux:text>
+        <flux:card class="mt-6 py-12 text-center">
+            <p class="font-semibold">{{ __('archived.empty.heading') }}</p>
+            <p class="mt-1 text-sm text-ink-muted">{{ __('archived.empty.text') }}</p>
         </flux:card>
     @else
-        <div class="mt-6 flex items-baseline gap-2">
-            <flux:heading size="lg" level="2">{{ __('archived.items') }}</flux:heading>
-            <flux:text size="sm">{{ $this->archivedItems->count() }}</flux:text>
-        </div>
+        <x-page.section-heading class="mt-6">
+            {{ __('archived.items') }}
+            <span class="ms-1 text-sm font-medium text-ink-muted">{{ $this->archivedItems->count() }}</span>
+        </x-page.section-heading>
 
         <div class="mt-2 space-y-3">
             @foreach ($this->archivedItems as $item)
                 <flux:card wire:key="archived-item-{{ $item->id }}" class="flex items-start gap-3">
                     <div class="min-w-0 flex-1">
-                        <flux:heading>{{ $item->name }}</flux:heading>
+                        <p class="font-semibold">{{ $item->name }}</p>
+
                         @if ($this->wasIn($item))
-                            <flux:text class="mt-1">{{ __('archived.was_in', ['path' => $this->wasIn($item)]) }}</flux:text>
+                            <x-archived.detail :label="__('archived.was_in')">{{ $this->wasIn($item) }}</x-archived.detail>
                         @endif
-                        <flux:text class="mt-1">{{ __('archived.archived_on', ['date' => $this->archivedOn($item)]) }}</flux:text>
+
+                        <x-archived.detail :label="__('archived.archived_on')">{{ $this->archivedOn($item) }}</x-archived.detail>
                     </div>
 
                     @can('edit', $household)
-                        <flux:button wire:click="chooseItemToRestore('{{ $item->id }}')" variant="filled" size="sm">
+                        <x-button.secondary wire:click="chooseItemToRestore('{{ $item->id }}')">
                             {{ __('archived.restore') }}
-                        </flux:button>
+                        </x-button.secondary>
                     @endcan
                 </flux:card>
             @endforeach
@@ -44,4 +46,4 @@
             </flux:modal>
         @endcan
     @endif
-</section>
+</x-page>

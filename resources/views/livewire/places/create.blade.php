@@ -1,38 +1,27 @@
-<section class="w-full max-w-xl">
+<x-page>
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->placesAbove" />
 
-    <flux:heading size="xl" level="1" class="mt-2">{{ __('places.add') }}</flux:heading>
+    <x-page.title class="mt-1">{{ __('places.add') }}</x-page.title>
 
-    <form wire:submit="add" class="mt-6 space-y-6">
-        <flux:input wire:model="name" :label="__('places.name')" autocomplete="off" />
+    <flux:card class="mt-6">
+        <form wire:submit="add" class="space-y-4">
+            <flux:input wire:model="name" :label="__('places.name')" autocomplete="off" />
 
-        <div>
-            <flux:text>{{ __('places.inside') }}</flux:text>
+            <x-form.place-field :label="__('places.inside')" :place-name="$parent->name ?? $this->householdName" />
 
-            <div class="mt-1 flex items-center justify-between gap-3">
-                <flux:heading>{{ $parent->name ?? $this->householdName }}</flux:heading>
+            <x-form.actions>
+                <flux:button type="submit" variant="primary" icon="plus">{{ __('places.add') }}</flux:button>
 
-                <flux:modal.trigger name="choose-place">
-                    <flux:button size="sm" variant="ghost">{{ __('places.change_place') }}</flux:button>
-                </flux:modal.trigger>
-            </div>
-
-            <flux:error name="placeId" />
-        </div>
-
-        <div class="flex gap-3">
-            <flux:button type="submit" variant="primary" icon="plus" class="flex-[7]">{{ __('places.add') }}</flux:button>
-
-            <flux:button
-                :href="$parent !== null ? route('places.show', [$household, $parent]) : route('places.index', $household)"
-                wire:navigate
-                variant="ghost"
-                class="flex-[3]"
-            >
-                {{ __('places.cancel') }}
-            </flux:button>
-        </div>
-    </form>
+                <flux:button
+                    :href="$parent !== null ? route('places.show', [$household, $parent]) : route('places.index', $household)"
+                    wire:navigate
+                    variant="ghost"
+                >
+                    {{ __('places.cancel') }}
+                </flux:button>
+            </x-form.actions>
+        </form>
+    </flux:card>
 
     <flux:modal name="choose-place" class="w-full md:w-[30rem]">
         <livewire:places.picker
@@ -42,4 +31,4 @@
             lazy
         />
     </flux:modal>
-</section>
+</x-page>

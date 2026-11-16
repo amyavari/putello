@@ -1,13 +1,9 @@
-<section class="w-full">
-    @include('partials.settings-heading')
-
-    <flux:heading level="2" class="sr-only">{{ __('Appearance settings') }}</flux:heading>
-
-    <x-settings.layout :heading="__('Appearance')" :subheading=" __('Update the appearance settings for your account')">
-        <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
-            <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
-            <flux:radio value="dark" icon="moon">{{ __('Dark') }}</flux:radio>
-            <flux:radio value="system" icon="computer-desktop">{{ __('System') }}</flux:radio>
+<x-settings.layout>
+    <x-settings.section :heading="__('Appearance')">
+        <flux:radio.group x-data x-model="$flux.appearance" :aria-label="__('Appearance')">
+            <flux:radio value="light" :label="__('Light')" />
+            <flux:radio value="dark" :label="__('Dark')" />
+            <flux:radio value="system" :label="__('Same as my device')" />
         </flux:radio.group>
-    </x-settings.layout>
-</section>
+    </x-settings.section>
+</x-settings.layout>

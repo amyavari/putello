@@ -1,20 +1,22 @@
-<section class="w-full max-w-3xl">
+<x-page>
     <x-flash-message :$message />
 
-    <div class="flex items-center justify-between gap-3">
-        <flux:heading size="xl" level="1">{{ __('places.title') }}</flux:heading>
+    <x-page.title>
+        {{ __('places.title') }}
 
-        @can('edit', $household)
-            <flux:button :href="route('places.create', $household)" wire:navigate variant="primary" icon="plus">
-                {{ __('places.add') }}
-            </flux:button>
-        @endcan
-    </div>
+        <x-slot:actions>
+            @can('edit', $household)
+                <flux:button :href="route('places.create', $household)" wire:navigate variant="primary" icon="plus">
+                    {{ __('places.add') }}
+                </flux:button>
+            @endcan
+        </x-slot:actions>
+    </x-page.title>
 
     @if ($this->tree->topPlaces()->isEmpty())
-        <flux:card class="mt-6 text-center">
-            <flux:heading>{{ __('places.empty.heading') }}</flux:heading>
-            <flux:text class="mt-1">{{ __('places.empty.text') }}</flux:text>
+        <flux:card class="mt-6 py-12 text-center">
+            <p class="font-semibold">{{ __('places.empty.heading') }}</p>
+            <p class="mt-1 text-sm text-ink-muted">{{ __('places.empty.text') }}</p>
         </flux:card>
     @else
         <flux:card class="mt-6 overflow-hidden p-0">
@@ -32,7 +34,8 @@
         </flux:card>
     @endif
 
-    <flux:link :href="route('archived.index', $household)" wire:navigate class="mt-6 inline-block">
+    <a href="{{ route('archived.index', $household) }}" wire:navigate class="mt-6 inline-flex min-h-11 items-center gap-2 font-medium text-accent hover:text-accent-hover">
+        <flux:icon.archive-box class="size-5" />
         {{ __('archived.link') }}
-    </flux:link>
-</section>
+    </a>
+</x-page>
