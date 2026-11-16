@@ -15,6 +15,7 @@ use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -30,19 +31,21 @@ final class Create extends Component
     public Household $household;
 
     /**
-     * The place the new item goes in.
+     * The place the new item goes in, or null until one is chosen.
      */
-    public Place $place;
+    public ?Place $place = null;
 
     public function mount(Request $request): void
     {
         $this->authorize('edit', $this->household);
 
-        abort_unless($request->filled('inside'), 404);
+        $this->name = $request->string('name')->toString();
 
-        $this->place = $this->household->places()->findOrFail(
-            $request->string('inside')->toString(),
-        );
+        if ($request->filled('inside')) {
+            $this->place = $this->household->places()->findOrFail(
+                $request->string('inside')->toString(),
+            );
+        }
     }
 
     /**
@@ -51,6 +54,10 @@ final class Create extends Component
     #[Computed]
     public function path(): Collection
     {
+        if (! $this->place instanceof Place) {
+            return new Collection;
+        }
+
         return PlaceTree::for($this->household)->placesDownTo($this->place);
     }
 
@@ -78,6 +85,7 @@ final class Create extends Component
         $this->authorize('edit', $this->household);
 
         $this->validateItem();
+        $this->ensurePlaceIsChosen();
 
         $item = $createItem->handle($user, $this->place, $this->name, $this->notes);
 
@@ -90,5 +98,17 @@ final class Create extends Component
     {
         return view('livewire.items.create')
             ->title(__('items.add'));
+    }
+
+    /**
+     * @phpstan-assert Place $this->place
+     */
+    private function ensurePlaceIsChosen(): void
+    {
+        if (! $this->place instanceof Place) {
+            throw ValidationException::withMessages([
+                'placeId' => __('items.place_required'),
+            ]);
+        }
     }
 }

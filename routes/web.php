@@ -2,22 +2,24 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\HomeController;
 use App\Http\Middleware\SaveCurrentHousehold;
 use App\Livewire\Archived;
 use App\Livewire\Households;
 use App\Livewire\Items;
 use App\Livewire\Places;
+use App\Livewire\Search;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
-
 Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('/', HomeController::class)->name('home');
     Route::livewire('households', Households\Index::class)->name('households.index');
 
     Route::prefix('households/{household}')
         ->can('view', 'household')
         ->middleware(SaveCurrentHousehold::class)
         ->group(function (): void {
+            Route::livewire('search', Search\Index::class)->name('search.index');
             Route::livewire('places', Places\Index::class)->name('places.index');
             Route::livewire('places/create', Places\Create::class)->name('places.create');
             Route::livewire('places/{place}', Places\Show::class)

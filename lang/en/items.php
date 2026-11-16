@@ -16,6 +16,7 @@ return [
     'save' => 'Save changes',
     'saved' => ':name saved.',
     'place' => 'Place',
+    'place_required' => 'Choose a place for the item.',
     'notes' => 'Notes',
     'no_notes' => 'No notes',
     'move' => 'Move',

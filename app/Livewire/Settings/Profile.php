@@ -54,7 +54,7 @@ final class Profile extends Component
         $user = Auth::user();
 
         if ($user->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('households.index', absolute: false));
+            $this->redirectIntended(default: route('home', absolute: false));
 
             return;
         }

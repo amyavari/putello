@@ -18,7 +18,7 @@
         <x-list.card class="mt-6">
             @foreach ($this->households as $household)
                 <x-list.link-row
-                    :href="route('places.index', $household)"
+                    :href="route('search.index', $household)"
                     :name="$household->membership->label ?? $household->name"
                     :detail="trans_choice('households.member_count', $household->members_count)"
                     wire:key="household-{{ $household->id }}"

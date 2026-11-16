@@ -86,6 +86,15 @@ test('email verification status is unchanged when email address is unchanged', f
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
+test('a verified user who asks for a new verification link is sent home', function (): void {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(Profile::class)
+        ->call('resendVerificationNotification')
+        ->assertRedirect(route('home', absolute: false));
+});
+
 test('user can delete their account', function (): void {
     $user = User::factory()->create();
 

@@ -23,7 +23,7 @@ test('users can authenticate using the login screen', function (): void {
         'password' => 'password',
     ])
         ->assertSessionHasNoErrors()
-        ->assertRedirect(route('households.index', absolute: false));
+        ->assertRedirect(route('home', absolute: false));
 
     assertAuthenticated();
 });
