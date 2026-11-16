@@ -250,3 +250,17 @@ select:focus[data-flux-control] {
     background-color: var(--accent-soft);
     color: var(--on-accent-soft);
 }
+
+/* The current Settings link is accent-soft, like the current menu row. */
+[data-flux-navlist-item][data-current] {
+    background-color: var(--accent-soft);
+    border-color: transparent;
+    color: var(--on-accent-soft);
+}
+
+/* Checked checkboxes and radios are olive (secondary), not terracotta. */
+[data-flux-checkbox],
+[data-flux-radio] {
+    --color-accent: var(--secondary);
+    --color-accent-foreground: var(--on-secondary);
+}

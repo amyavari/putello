@@ -4,19 +4,11 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-bg text-ink antialiased">
-        <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div class="flex w-full max-w-sm flex-col gap-2">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="flex h-9 w-9 mb-1 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                    </span>
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
-                </a>
-                <div class="flex flex-col gap-6">
-                    {{ $slot }}
-                </div>
-            </div>
-        </div>
+        <main class="mx-auto flex min-h-svh w-full max-w-[25rem] flex-col gap-6 px-4 py-12 md:py-24">
+            <a href="{{ route('home') }}" wire:navigate class="self-start text-lg font-bold text-ink">{{ config('app.name') }}</a>
+
+            {{ $slot }}
+        </main>
 
         @persist('toast')
             <flux:toast.group>

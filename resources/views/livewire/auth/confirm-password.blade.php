@@ -5,7 +5,7 @@
             :description="__('This is a secure area of the application. Please confirm your password before continuing.')"
         />
 
-        <x-auth-session-status class="text-center" :status="session('status')" />
+        <x-auth-session-status :status="session('status')" />
 
         <x-passkey-verify
             options-route="passkey.confirm-options"
@@ -15,7 +15,9 @@
             :separator="__('Or confirm with password')"
         />
 
-        <form method="POST" action="{{ route('password.confirm.store') }}" class="flex flex-col gap-6">
+        <x-auth.card>
+
+        <form method="POST" action="{{ route('password.confirm.store') }}" class="flex flex-col gap-4">
             @csrf
 
             <flux:input
@@ -24,7 +26,6 @@
                 type="password"
                 required
                 autocomplete="current-password"
-                :placeholder="__('Password')"
                 viewable
             />
 
@@ -32,5 +33,6 @@
                 {{ __('Confirm') }}
             </flux:button>
         </form>
+        </x-auth.card>
     </div>
 </x-layouts::auth>

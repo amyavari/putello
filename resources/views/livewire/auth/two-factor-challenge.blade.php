@@ -43,25 +43,24 @@
                 />
             </div>
 
-            <form method="POST" action="{{ route('two-factor.login.store') }}">
+            <form method="POST" action="{{ route('two-factor.login.store') }}" class="space-y-6">
                 @csrf
 
-                <div class="space-y-5 text-center">
+                <x-auth.card class="space-y-5">
                     <div x-show="!showRecoveryInput">
-                        <div class="flex items-center justify-center my-5" x-ref="otp">
+                        <div x-ref="otp">
                             <flux:otp
                                 x-model="code"
                                 length="6"
                                 name="code"
                                 label="OTP Code"
                                 label:sr-only
-                                class="mx-auto"
                              />
                         </div>
                     </div>
 
                     <div x-show="showRecoveryInput">
-                        <div class="my-5">
+                        <div>
                             <flux:input
                                 type="text"
                                 name="recovery_code"
@@ -73,9 +72,7 @@
                         </div>
 
                         @error('recovery_code')
-                            <flux:text color="red">
-                                {{ $message }}
-                            </flux:text>
+                            <p class="mt-2 text-sm text-danger-ink">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -86,15 +83,13 @@
                     >
                         {{ __('Continue') }}
                     </flux:button>
-                </div>
+                </x-auth.card>
 
-                <div class="mt-5 space-x-0.5 text-sm leading-5 text-center">
-                    <span class="opacity-50">{{ __('or you can') }}</span>
-                    <div class="inline font-medium underline cursor-pointer opacity-80">
-                        <span x-show="!showRecoveryInput" @click="toggleInput()">{{ __('login using a recovery code') }}</span>
-                        <span x-show="showRecoveryInput" @click="toggleInput()">{{ __('login using an authentication code') }}</span>
-                    </div>
-                </div>
+                <x-auth.footer>
+                    {{ __('or you can') }}
+                    <button type="button" x-show="!showRecoveryInput" @click="toggleInput()" class="cursor-pointer text-accent underline underline-offset-2 hover:text-accent-hover">{{ __('login using a recovery code') }}</button>
+                    <button type="button" x-show="showRecoveryInput" @click="toggleInput()" class="cursor-pointer text-accent underline underline-offset-2 hover:text-accent-hover">{{ __('login using an authentication code') }}</button>
+                </x-auth.footer>
             </form>
         </div>
     </div>

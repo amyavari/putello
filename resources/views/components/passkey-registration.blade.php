@@ -66,36 +66,31 @@
     }"
 >
     <template x-if="!supported">
-        <flux:text>{{ __('Passkeys are not supported in this browser.') }}</flux:text>
+        <p class="text-sm text-ink-muted">{{ __('Passkeys are not supported in this browser.') }}</p>
     </template>
 
     <template x-if="supported && !showForm">
         <div>
-            <flux:button
-                variant="primary"
-                icon="plus"
-                x-on:click="showForm = true"
-            >
+            <x-button.secondary icon="plus" x-on:click="showForm = true">
                 {{ __('Add passkey') }}
-            </flux:button>
+            </x-button.secondary>
         </div>
     </template>
 
     <template x-if="supported && showForm">
-        <div class="space-y-4 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-4">
+        <flux:card class="space-y-4">
             <flux:input
                 label="{{ __('Passkey name') }}"
                 x-model="name"
-                placeholder="{{ __('e.g., MacBook Pro, iPhone') }}"
                 x-on:keydown.enter.prevent="register()"
                 x-ref="passkeyNameInput"
                 x-init="$nextTick(() => $refs.passkeyNameInput?.focus())"
             />
-            <flux:text class="!mt-1">{{ __('Give this passkey a name to help you identify it later.') }}</flux:text>
+            <p class="mt-1! text-sm text-ink-muted">{{ __('Give this passkey a name to help you identify it later.') }}</p>
 
-            <p x-show="error" x-text="error" x-cloak class="text-sm text-red-600 dark:text-red-400"></p>
+            <p x-show="error" x-text="error" x-cloak class="text-sm text-danger-ink"></p>
 
-            <div class="flex gap-2">
+            <x-form.actions>
                 <flux:button
                     variant="primary"
                     x-on:click="register()"
@@ -110,7 +105,7 @@
                 >
                     {{ __('Cancel') }}
                 </flux:button>
-            </div>
-        </div>
+            </x-form.actions>
+        </flux:card>
     </template>
 </div>
