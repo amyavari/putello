@@ -22,4 +22,5 @@ return [
     'not_lent' => 'Not lent',
     'lent_to' => 'Lent to :borrower · since :date',
     'due' => 'Due :date',
+    'close_loan_first' => 'Close the loan first.',
 ];
