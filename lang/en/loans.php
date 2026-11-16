@@ -23,4 +23,12 @@ return [
     'lent_to' => 'Lent to :borrower · since :date',
     'due' => 'Due :date',
     'close_loan_first' => 'Close the loan first.',
+    'close_loan' => 'Close loan',
+    'lent_since' => ':item · lent to :borrower since :date',
+    'what_happened' => 'What happened?',
+    'returned' => 'Returned',
+    'returned_hint' => 'It is back in :path.',
+    'choose_returned_or_lost' => 'Choose Returned or Lost first.',
+    'already_closed' => 'This loan is already closed.',
+    'returned_message' => ':name returned.',
 ];

@@ -13,11 +13,15 @@
                 <flux:button variant="primary">{{ __('items.move') }}</flux:button>
             </flux:modal.trigger>
 
-            @unless ($item->isLent())
+            @if ($item->currentLoan === null)
                 <x-button.secondary :href="route('items.lend', [$household, $item])" wire:navigate>
                     {{ __('loans.lend') }}
                 </x-button.secondary>
-            @endunless
+            @else
+                <flux:modal.trigger name="close-loan">
+                    <x-button.secondary>{{ __('loans.close_loan') }}</x-button.secondary>
+                </flux:modal.trigger>
+            @endif
 
             <x-items.more-actions :$household :$item />
         </div>
@@ -63,5 +67,11 @@
                 <flux:error name="placeId" />
             </div>
         </flux:modal>
+
+        @if ($item->currentLoan !== null)
+            <flux:modal name="close-loan" class="w-full md:w-[30rem]">
+                <livewire:loans.close :loan="$item->currentLoan" :key="'close-loan-'.$item->currentLoan->id" />
+            </flux:modal>
+        @endif
     @endcan
 </x-page>

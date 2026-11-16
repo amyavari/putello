@@ -8,10 +8,12 @@ use App\Livewire\Items\Create;
 use App\Livewire\Items\Edit;
 use App\Livewire\Items\Lend;
 use App\Livewire\Items\Show;
+use App\Livewire\Loans\Close;
 use App\Livewire\Places;
 use App\Models\Activity;
 use App\Models\Household;
 use App\Models\Item;
+use App\Models\Loan;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -89,6 +91,28 @@ test('lending an item records an entry with the borrower', function (): void {
 
     assertDatabaseHas(Activity::class, [
         'type' => ActivityType::ItemLent,
+        'item_id' => $drill->id,
+        'subject_name' => 'Drill',
+        'from_value' => null,
+        'to_value' => 'Neighbor Reza',
+    ]);
+});
+
+test('closing a loan as returned records an entry with the borrower', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    $loan = Loan::factory()
+        ->for($drill)
+        ->for(borrowerOf($household, 'Neighbor Reza'))
+        ->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->set('closedAs', 'returned')
+        ->call('close');
+
+    assertDatabaseHas(Activity::class, [
+        'type' => ActivityType::ItemReturned,
         'item_id' => $drill->id,
         'subject_name' => 'Drill',
         'from_value' => null,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\LoanClosedAs;
 use App\Models\Borrower;
 use App\Models\Item;
 use App\Models\Loan;
@@ -31,5 +32,13 @@ final class LoanFactory extends Factory
             'note' => null,
             'closed_at' => null,
         ];
+    }
+
+    public function returned(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'closed_at' => now(),
+            'closed_as' => LoanClosedAs::Returned,
+        ]);
     }
 }

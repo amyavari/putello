@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\LoanClosedAs;
 use Database\Factories\LoanFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,6 +43,7 @@ final class Loan extends Model
             'lent_at' => 'date',
             'due_at' => 'date',
             'closed_at' => 'datetime',
+            'closed_as' => LoanClosedAs::class,
         ];
     }
 }

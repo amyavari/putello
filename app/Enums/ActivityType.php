@@ -10,6 +10,7 @@ enum ActivityType: string
     case ItemEdited = 'item.edited';
     case ItemMoved = 'item.moved';
     case ItemLent = 'item.lent';
+    case ItemReturned = 'item.returned';
     case ItemArchived = 'item.archived';
     case ItemRestored = 'item.restored';
     case ItemPathChanged = 'item.path_changed';
