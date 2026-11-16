@@ -11,6 +11,7 @@ enum ActivityType: string
     case ItemMoved = 'item.moved';
     case ItemLent = 'item.lent';
     case ItemReturned = 'item.returned';
+    case ItemLost = 'item.lost';
     case ItemArchived = 'item.archived';
     case ItemRestored = 'item.restored';
     case ItemPathChanged = 'item.path_changed';

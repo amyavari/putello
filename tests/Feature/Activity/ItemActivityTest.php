@@ -18,6 +18,7 @@ use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
 
 test('adding an item records an entry with the path of its place', function (): void {
     $household = Household::factory()
@@ -117,6 +118,43 @@ test('closing a loan as returned records an entry with the borrower', function (
         'subject_name' => 'Drill',
         'from_value' => null,
         'to_value' => 'Neighbor Reza',
+    ]);
+});
+
+test('closing a loan as lost records an entry with the path and the borrower', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeInside(placeIn($household, 'Storage room'), 'Shelf A'), 'Drill');
+    $loan = Loan::factory()
+        ->for($drill)
+        ->for(borrowerOf($household, 'Neighbor Reza'))
+        ->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->set('closedAs', 'lost')
+        ->call('close');
+
+    assertDatabaseHas(Activity::class, [
+        'type' => ActivityType::ItemLost,
+        'item_id' => $drill->id,
+        'subject_name' => 'Drill',
+        'from_value' => 'Storage room › Shelf A',
+        'to_value' => 'Neighbor Reza',
+    ]);
+});
+
+test('closing a loan as lost records no archive entry', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    $loan = Loan::factory()->for($drill)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->set('closedAs', 'lost')
+        ->call('close');
+
+    assertDatabaseMissing(Activity::class, [
+        'type' => ActivityType::ItemArchived,
     ]);
 });
 

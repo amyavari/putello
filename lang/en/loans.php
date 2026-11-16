@@ -28,7 +28,11 @@ return [
     'what_happened' => 'What happened?',
     'returned' => 'Returned',
     'returned_hint' => 'It is back in :path.',
+    'lost' => 'Lost',
+    'lost_hint' => 'It is not coming back.',
+    'will_be_archived' => ':name will be archived. You can restore it later from Archived.',
     'choose_returned_or_lost' => 'Choose Returned or Lost first.',
     'already_closed' => 'This loan is already closed.',
     'returned_message' => ':name returned.',
+    'lost_message' => ':name marked Lost and archived.',
 ];

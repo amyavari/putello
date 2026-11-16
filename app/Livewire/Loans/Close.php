@@ -23,15 +23,21 @@ final class Close extends Component
      */
     public ?string $closedAs = null;
 
+    public function isLost(): bool
+    {
+        return $this->closedAs === LoanClosedAs::Lost->value;
+    }
+
     public function close(#[CurrentUser] User $user, CloseLoanAction $closeLoan): void
     {
         $item = $this->loan->item;
+        $place = $item->place;
 
         $this->authorize('edit', $item->household);
 
         $this->validate(
             rules: [
-                'closedAs' => ['required', Rule::enum(LoanClosedAs::class)->only(LoanClosedAs::Returned)],
+                'closedAs' => ['required', Rule::enum(LoanClosedAs::class)],
             ],
             messages: [
                 'closedAs.required' => __('loans.choose_returned_or_lost'),
@@ -39,6 +45,14 @@ final class Close extends Component
         );
 
         $closeLoan->handle($user, $this->loan, LoanClosedAs::from((string) $this->closedAs));
+
+        if ($this->isLost()) {
+            session()->flash('message', __('loans.lost_message', ['name' => $item->name]));
+
+            $this->redirectRoute('places.show', [$item->household, $place], navigate: true);
+
+            return;
+        }
 
         session()->flash('message', __('loans.returned_message', ['name' => $item->name]));
 

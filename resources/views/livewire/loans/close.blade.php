@@ -14,10 +14,13 @@
 
     <flux:radio.group wire:model.live="closedAs" :label="__('loans.what_happened')" variant="cards" indicator="start" class="flex-col">
         <flux:radio value="returned" :label="__('loans.returned')" :description="__('loans.returned_hint', ['path' => $path])" />
+        <flux:radio value="lost" :label="__('loans.lost')" :description="__('loans.lost_hint')" />
     </flux:radio.group>
 
     @if ($closedAs === null)
         <p class="text-sm text-ink-muted">{{ __('loans.choose_returned_or_lost') }}</p>
+    @elseif ($this->isLost())
+        <p class="text-sm text-ink-muted">{{ __('loans.will_be_archived', ['name' => $loan->item->name]) }}</p>
     @endif
 
     <x-modal.actions>

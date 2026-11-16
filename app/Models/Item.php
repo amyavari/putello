@@ -50,6 +50,18 @@ final class Item extends Model
     }
 
     /**
+     * Takes the item out of its place and archives it; `place_id` stays null while archived.
+     */
+    public function archive(): void
+    {
+        $this->update([
+            'place_id' => null,
+        ]);
+
+        $this->delete();
+    }
+
+    /**
      * An ordered hasOne, not ofMany(): ofMany() adds MAX(id), and PostgreSQL may not have MAX() for UUIDs.
      * Eager loading keeps the first row for each item, so the latest entry wins.
      *

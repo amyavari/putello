@@ -14,6 +14,7 @@ use Carbon\CarbonImmutable;
 use Livewire\Livewire;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertSoftDeleted;
 use function Pest\Laravel\travelTo;
 
 test('the owner and editors get the close loan modal while the item is lent', function (Role $role): void {
@@ -153,6 +154,77 @@ test('after returned the app opens the item with a message', function (): void {
         ->assertRedirect(route('items.show', [$household, $drill]));
 
     expect(session('message'))->toBe('Drill returned.');
+});
+
+test('the lost choice says the item is not coming back', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    $loan = Loan::factory()->for($drill)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->assertSee('It is not coming back.');
+});
+
+test('choosing lost says the item will be archived', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    $loan = Loan::factory()->for($drill)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->set('closedAs', 'lost')
+        ->assertSee('Drill will be archived. You can restore it later from Archived.');
+});
+
+test('the owner closes a loan as lost', function (): void {
+    travelTo('2026-11-16 10:00');
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    $loan = Loan::factory()->for($drill)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->set('closedAs', 'lost')
+        ->call('close')
+        ->assertHasNoErrors();
+
+    expect($loan->fresh())
+        ->closed_at->toEqual(CarbonImmutable::parse('2026-11-16 10:00'))
+        ->closed_as->toBe(LoanClosedAs::Lost);
+});
+
+test('a lost item is archived and taken out of its place', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    $loan = Loan::factory()->for($drill)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->set('closedAs', 'lost')
+        ->call('close');
+
+    assertSoftDeleted($drill);
+    assertDatabaseHas(Item::class, [
+        'id' => $drill->id,
+        'place_id' => null,
+    ]);
+});
+
+test('after lost the app opens the place the item was in with a message and no undo', function (): void {
+    $household = Household::factory()->create();
+    $storageRoom = placeIn($household, 'Storage room');
+    $drill = itemIn($storageRoom, 'Drill');
+    $loan = Loan::factory()->for($drill)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Close::class, ['loan' => $loan])
+        ->set('closedAs', 'lost')
+        ->call('close')
+        ->assertRedirect(route('places.show', [$household, $storageRoom]));
+
+    expect(session('message'))->toBe('Drill marked Lost and archived.')
+        ->and(session('archived_item_id'))->toBeNull();
 });
 
 test('returned or lost must be chosen', function (): void {

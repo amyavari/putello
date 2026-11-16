@@ -27,11 +27,7 @@ final readonly class ArchiveItemAction
             $oldPlace = $item->place;
             $oldPath = PlaceTree::for($item->household)->pathOf($oldPlace);
 
-            $item->update([
-                'place_id' => null,
-            ]);
-
-            $item->delete();
+            $item->archive();
 
             $this->recordActivity->handle($user, ActivityType::ItemArchived, $item, from: $oldPath);
 

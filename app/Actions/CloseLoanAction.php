@@ -8,6 +8,7 @@ use App\Enums\ActivityType;
 use App\Enums\LoanClosedAs;
 use App\Models\Loan;
 use App\Models\User;
+use App\Support\PlaceTree;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -25,8 +26,29 @@ final readonly class CloseLoanAction
                 'closed_as' => $closedAs,
             ]);
 
-            $this->recordActivity->handle($user, ActivityType::ItemReturned, $loan->item, to: $loan->borrower->name);
+            match ($closedAs) {
+                LoanClosedAs::Returned => $this->recordReturn($user, $loan),
+                LoanClosedAs::Lost => $this->archiveLostItem($user, $loan),
+            };
         });
+    }
+
+    private function recordReturn(User $user, Loan $loan): void
+    {
+        $this->recordActivity->handle($user, ActivityType::ItemReturned, $loan->item, to: $loan->borrower->name);
+    }
+
+    /**
+     * One `item.lost` entry, with the path the item was in; no `item.archived` entry (D38).
+     */
+    private function archiveLostItem(User $user, Loan $loan): void
+    {
+        $item = $loan->item;
+        $oldPath = PlaceTree::for($item->household)->pathOf($item->place);
+
+        $item->archive();
+
+        $this->recordActivity->handle($user, ActivityType::ItemLost, $item, from: $oldPath, to: $loan->borrower->name);
     }
 
     /**
