@@ -1,10 +1,10 @@
 <div class="space-y-4">
     <div>
         @if ($this->isMoving())
-            <flux:heading size="lg">{{ __('places.move_heading', ['name' => $this->nameOfWhatIsMoved()]) }}</flux:heading>
-            <flux:text class="mt-1">{{ __('places.now_in', ['place' => $this->whereItIsNow]) }}</flux:text>
+            <flux:heading size="lg" class="font-semibold">{{ __('places.move_heading', ['name' => $this->nameOfWhatIsMoved()]) }}</flux:heading>
+            <p class="mt-1 text-sm text-ink-muted">{{ __('places.now_in', ['place' => $this->whereItIsNow]) }}</p>
         @else
-            <flux:heading size="lg">{{ __('places.choose_a_place') }}</flux:heading>
+            <flux:heading size="lg" class="font-semibold">{{ __('places.choose_a_place') }}</flux:heading>
         @endif
     </div>
 
@@ -17,11 +17,11 @@
 
     @if ($this->isSearching())
         @if ($this->matches->isEmpty())
-            <flux:text>{{ __('places.no_match', ['search' => $search]) }}</flux:text>
+            <p class="text-ink-muted">{{ __('places.no_match', ['search' => $search]) }}</p>
         @else
-            <ul class="max-h-80 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <ul class="max-h-80 overflow-y-auto rounded-lg border border-border">
                 @foreach ($this->matches as $match)
-                    <li wire:key="picker-match-{{ $match->id }}" class="flex border-b border-zinc-200 px-4 last:border-b-0 dark:border-zinc-700">
+                    <li wire:key="picker-match-{{ $match->id }}" class="flex border-b border-border px-4 last:border-b-0 has-[[aria-pressed=true]]:bg-accent-soft">
                         <x-places.picker-choice
                             :name="$match->name"
                             :path="$this->tree->pathOf($match)"
@@ -34,7 +34,7 @@
             </ul>
         @endif
     @else
-        <ul class="max-h-80 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-700" x-data="{ open: true }">
+        <ul class="max-h-80 overflow-y-auto rounded-lg border border-border" x-data="{ open: true }">
             <li>
                 <x-places.tree-row :name="$this->householdName" :depth="0" :has-children="$this->tree->topPlaces()->isNotEmpty()">
                     <x-places.picker-choice
@@ -59,7 +59,7 @@
         </ul>
     @endif
 
-    <flux:text size="sm">
+    <p class="text-sm text-ink-muted">
         @if ($this->isMovingAPlace())
             {{ __('places.cannot_be_chosen', ['name' => $place->name]) }}
             <br>
@@ -72,13 +72,9 @@
         @else
             {{ __('places.choose_a_place_first') }}
         @endif
-    </flux:text>
+    </p>
 
-    <div class="flex gap-3">
+    <x-modal.actions>
         <flux:button wire:click="confirm" variant="primary" :disabled="! $this->hasChoice">{{ $this->isMoving() ? __('places.move_here') : __('places.choose') }}</flux:button>
-
-        <flux:modal.close>
-            <flux:button variant="ghost">{{ __('places.cancel') }}</flux:button>
-        </flux:modal.close>
-    </div>
+    </x-modal.actions>
 </div>

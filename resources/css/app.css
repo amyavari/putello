@@ -174,10 +174,32 @@ select[data-flux-control] {
     border-color: var(--border-strong);
 }
 
+/* Things that float (menus, modals) sit on surface, and a modal on the overlay scrim. */
+[data-flux-menu],
+[data-flux-modal] dialog {
+    background-color: var(--surface);
+}
+
+[data-flux-modal] dialog::backdrop {
+    background-color: var(--overlay);
+}
+
+/* Menu items are 44px tall, like every control. */
+[data-flux-menu-item] {
+    @apply min-h-11;
+}
+
 /* Flux paints the outline button white; ours sits on surface with a control edge. */
 [data-flux-button].bg-white {
     background-color: var(--surface);
     border-color: var(--border-strong);
+}
+
+/* Cards have 16px padding on small screens and 24px from lg up. */
+@media (width < 64rem) {
+    [data-flux-card]:not(.p-0) {
+        @apply p-4;
+    }
 }
 
 /* Buttons and inputs are 44px tall, the smallest tap target. */

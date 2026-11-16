@@ -1,19 +1,14 @@
 @props(['household', 'householdName', 'places', 'item' => null])
 
-<flux:breadcrumbs>
-    <flux:breadcrumbs.item :href="route('places.index', $household)" wire:navigate>
-        {{ $householdName }}
-    </flux:breadcrumbs.item>
+{{-- The pages above this one: the household first, then its places, then the item. --}}
+<nav aria-label="{{ __('shell.breadcrumb') }}" class="flex flex-wrap items-center gap-x-2 text-sm">
+    <x-places.crumb :href="route('places.index', $household)">{{ $householdName }}</x-places.crumb>
 
     @foreach ($places as $place)
-        <flux:breadcrumbs.item :href="route('places.show', [$household, $place])" wire:navigate wire:key="crumb-{{ $place->id }}">
-            {{ $place->name }}
-        </flux:breadcrumbs.item>
+        <x-places.crumb :href="route('places.show', [$household, $place])" wire:key="crumb-{{ $place->id }}">{{ $place->name }}</x-places.crumb>
     @endforeach
 
     @if ($item !== null)
-        <flux:breadcrumbs.item :href="route('items.show', [$household, $item])" wire:navigate>
-            {{ $item->name }}
-        </flux:breadcrumbs.item>
+        <x-places.crumb :href="route('items.show', [$household, $item])">{{ $item->name }}</x-places.crumb>
     @endif
-</flux:breadcrumbs>
+</nav>
