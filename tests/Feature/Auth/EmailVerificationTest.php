@@ -38,7 +38,7 @@ test('email can be verified', function (): void {
 
     actingAs($user)
         ->get($verificationUrl)
-        ->assertRedirect(route('households.index', absolute: false).'?verified=1');
+        ->assertRedirect(route('home', absolute: false).'?verified=1');
 
     Event::assertDispatched(Verified::class);
 
@@ -74,7 +74,7 @@ test('already verified user visiting verification link is redirected without fir
 
     actingAs($user)
         ->get($verificationUrl)
-        ->assertRedirect(route('households.index', absolute: false).'?verified=1');
+        ->assertRedirect(route('home', absolute: false).'?verified=1');
 
     Event::assertNotDispatched(Verified::class);
 

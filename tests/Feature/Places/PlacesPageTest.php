@@ -25,7 +25,7 @@ test('the places page renders the places of the household', function (): void {
         ->assertSeeLivewire(Index::class);
 });
 
-test('opening the places page saves the household as the one used last', function (): void {
+test('opening the places page saves the household as the one opened last', function (): void {
     $household = Household::factory()->create();
     $user = memberOf($household, Role::Viewer);
     actingAs($user);
@@ -253,7 +253,7 @@ test('a user who is not a member gets a not found page', function (): void {
         ->assertNotFound();
 });
 
-test('a user who is not a member does not save the household as the one used last', function (): void {
+test('a user who is not a member does not save the household as the one opened last', function (): void {
     $user = User::factory()->create();
     $household = Household::factory()->create();
     actingAs($user);

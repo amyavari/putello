@@ -18,7 +18,7 @@ test('new users can register', function (): void {
         'password_confirmation' => 'password',
     ])
         ->assertSessionHasNoErrors()
-        ->assertRedirect(route('households.index', absolute: false));
+        ->assertRedirect(route('home', absolute: false));
 
     assertAuthenticated();
 });

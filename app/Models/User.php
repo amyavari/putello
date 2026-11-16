@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -36,6 +37,14 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             ->as('membership')
             ->withPivot('role', 'label')
             ->withTimestamps();
+    }
+
+    /**
+     * @return BelongsTo<Household, $this>
+     */
+    public function householdOpenedLast(): BelongsTo
+    {
+        return $this->belongsTo(Household::class, 'current_household_id');
     }
 
     public function initials(): string
