@@ -50,6 +50,19 @@ final class Item extends Model
     }
 
     /**
+     * Takes the item out of its place and archives it; `place_id` stays null while archived.
+     */
+    public function archive(): void
+    {
+        $this->update([
+            'place_id' => null,
+        ]);
+
+        $this->delete();
+    }
+
+    /**
+     * The last `item.archived` or `item.lost` entry: Lost archives the item too (D38).
      * An ordered hasOne, not ofMany(): ofMany() adds MAX(id), and PostgreSQL may not have MAX() for UUIDs.
      * Eager loading keeps the first row for each item, so the latest entry wins.
      *
@@ -58,7 +71,7 @@ final class Item extends Model
     public function lastArchiveEntry(): HasOne
     {
         return $this->hasOne(Activity::class)
-            ->where('type', ActivityType::ItemArchived)
+            ->whereIn('type', [ActivityType::ItemArchived, ActivityType::ItemLost])
             ->latest('created_at');
     }
 }

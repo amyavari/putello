@@ -8,6 +8,7 @@ return [
     'items' => 'Items',
     'was_in' => 'Was in:',
     'archived_on' => 'Archived:',
+    'marked_lost' => ', marked Lost',
     'restore' => 'Restore',
     'empty' => [
         'heading' => 'Nothing is archived',

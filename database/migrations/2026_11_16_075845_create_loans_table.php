@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('due_at')->nullable();
             $table->string('note')->nullable();
             $table->timestamp('closed_at')->nullable();
+            $table->string('closed_as')->nullable();
             $table->timestamps();
         });
     }

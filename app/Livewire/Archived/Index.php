@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Archived;
 
 use App\Actions\RestoreItemAction;
+use App\Enums\ActivityType;
 use App\Livewire\Concerns\ShowsHouseholdName;
 use App\Models\Household;
 use App\Models\Item;
@@ -56,6 +57,11 @@ final class Index extends Component
     public function archivedOn(Item $item): string
     {
         return ShortDate::of($item->deleted_at);
+    }
+
+    public function wasMarkedLost(Item $item): bool
+    {
+        return $item->lastArchiveEntry?->type === ActivityType::ItemLost;
     }
 
     /**
