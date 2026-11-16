@@ -211,3 +211,14 @@ select:focus[data-flux-control] {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Menu rows are 44px tall; the current one is accent-soft. */
+[data-flux-sidebar-item] {
+    @apply h-11;
+}
+
+[data-flux-sidebar-item][data-current] {
+    background-color: var(--accent-soft);
+    border-color: transparent;
+    color: var(--on-accent-soft);
+}
