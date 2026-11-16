@@ -6,11 +6,13 @@ use App\Enums\Role;
 use App\Livewire\Items\Show;
 use App\Models\Household;
 use App\Models\Item;
+use App\Models\Loan;
 use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\travelTo;
 
 test('the item page renders the item', function (): void {
     $household = Household::factory()->create();
@@ -56,6 +58,70 @@ test('the place card shows the path of the place', function (): void {
     Livewire::actingAs($household->owner)
         ->test(Show::class, ['household' => $household, 'item' => $spoon])
         ->assertSeeInOrder(['Place', 'Kitchen', '›', 'Drawer 1']);
+});
+
+test('an item that is not lent says so', function (): void {
+    $household = Household::factory()->create();
+    $medal = itemIn(placeIn($household, 'John’s room'), 'Medal');
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $medal])
+        ->assertSeeInOrder(['Loan', 'Not lent']);
+});
+
+test('a lent item shows who has it and since when', function (): void {
+    travelTo('2026-11-16');
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    Loan::factory()
+        ->for($drill)
+        ->for(borrowerOf($household, 'Neighbor Reza'))
+        ->create(['lent_at' => '2026-11-03']);
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $drill])
+        ->assertSeeInOrder(['Loan', 'Lent to Neighbor Reza · since Nov 3'])
+        ->assertDontSee('Not lent');
+});
+
+test('a lent item shows its due date', function (): void {
+    travelTo('2026-11-16');
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    Loan::factory()
+        ->for($drill)
+        ->create([
+            'lent_at' => '2026-11-03',
+            'due_at' => '2026-11-17',
+        ]);
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $drill])
+        ->assertSee('Due Nov 17');
+});
+
+test('a loan with no due date shows no due date', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    Loan::factory()->for($drill)->create(); // No due date
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $drill])
+        ->assertDontSee('Due ');
+});
+
+test('the lending date shows the year when it is not this year', function (): void {
+    travelTo('2026-11-16');
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    Loan::factory()
+        ->for($drill)
+        ->for(borrowerOf($household, 'Neighbor Reza'))
+        ->create(['lent_at' => '2025-12-20']);
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $drill])
+        ->assertSee('Lent to Neighbor Reza · since Dec 20, 2025');
 });
 
 test('the notes are shown', function (): void {

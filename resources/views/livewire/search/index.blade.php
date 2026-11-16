@@ -43,7 +43,13 @@
                             :name="$item->name"
                             :detail="$this->tree->pathOf($item->place)"
                             wire:key="item-{{ $item->id }}"
-                        />
+                        >
+                            @if ($item->currentLoan !== null)
+                                <x-slot:below>
+                                    <x-loans.badge :loan="$item->currentLoan" />
+                                </x-slot:below>
+                            @endif
+                        </x-list.link-row>
                     @endforeach
                 </x-list.card>
             </section>

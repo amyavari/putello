@@ -479,15 +479,3 @@ test('unverified users are redirected to the verification notice', function (): 
     get(route('items.lend', [$medal->household, $medal]))
         ->assertRedirect(route('verification.notice'));
 });
-
-// Helpers
-
-/**
- * A saved borrower of the household.
- */
-function borrowerOf(Household $household, string $name): Borrower
-{
-    return Borrower::factory()
-        ->for($household)
-        ->create(['name' => $name]);
-}

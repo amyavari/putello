@@ -18,4 +18,8 @@ return [
     'note_optional' => 'Note (optional)',
     'lent' => ':name lent to :borrower.',
     'already_lent' => ':name is already lent.',
+    'loan' => 'Loan',
+    'not_lent' => 'Not lent',
+    'lent_to' => 'Lent to :borrower · since :date',
+    'due' => 'Due :date',
 ];

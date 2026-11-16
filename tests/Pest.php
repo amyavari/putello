@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Role;
+use App\Models\Borrower;
 use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
@@ -96,6 +97,16 @@ function itemIn(Place $place, string $name, ?string $notes = null): Item
             'name' => $name,
             'notes' => $notes,
         ]);
+}
+
+/**
+ * A saved borrower of the household.
+ */
+function borrowerOf(Household $household, string $name): Borrower
+{
+    return Borrower::factory()
+        ->for($household)
+        ->create(['name' => $name]);
 }
 
 /**
