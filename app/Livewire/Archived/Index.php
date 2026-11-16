@@ -10,6 +10,7 @@ use App\Models\Household;
 use App\Models\Item;
 use App\Models\Place;
 use App\Models\User;
+use App\Support\ShortDate;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -52,16 +53,9 @@ final class Index extends Component
         return $this->archivedItems->isEmpty();
     }
 
-    /**
-     * The year is shown only when it is not the current year (UI rules).
-     */
     public function archivedOn(Item $item): string
     {
-        $archivedAt = $item->deleted_at;
-
-        return $archivedAt->isCurrentYear()
-            ? $archivedAt->translatedFormat('M j')
-            : $archivedAt->translatedFormat('M j, Y');
+        return ShortDate::of($item->deleted_at);
     }
 
     /**

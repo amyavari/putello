@@ -35,6 +35,21 @@ final class Item extends Model
     }
 
     /**
+     * The open loan, or none while the item is not lent.
+     *
+     * @return HasOne<Loan, $this>
+     */
+    public function currentLoan(): HasOne
+    {
+        return $this->hasOne(Loan::class)->whereNull('closed_at');
+    }
+
+    public function isLent(): bool
+    {
+        return $this->currentLoan()->exists();
+    }
+
+    /**
      * An ordered hasOne, not ofMany(): ofMany() adds MAX(id), and PostgreSQL may not have MAX() for UUIDs.
      * Eager loading keeps the first row for each item, so the latest entry wins.
      *

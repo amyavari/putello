@@ -32,6 +32,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::livewire('items/{item}/edit', Items\Edit::class)
                 ->scopeBindings()
                 ->name('items.edit');
+            Route::livewire('items/{item}/lend', Items\Lend::class)
+                ->scopeBindings()
+                ->name('items.lend');
             Route::livewire('archived', Archived\Index::class)->name('archived.index');
         });
 });

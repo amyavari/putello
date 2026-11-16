@@ -8,6 +8,7 @@ use App\Livewire\Places;
 use App\Livewire\Places\Index;
 use App\Models\Household;
 use App\Models\Item;
+use App\Models\Loan;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -142,4 +143,28 @@ test('a viewer can not archive an item', function (): void {
         ->assertForbidden();
 
     assertNotSoftDeleted($medal);
+});
+
+test('a lent item shows why it can not be archived', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    Loan::factory()->for($drill)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $drill])
+        ->assertSee('Close the loan first.');
+});
+
+test('a lent item can not be archived', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+    Loan::factory()->for($drill)->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Show::class, ['household' => $household, 'item' => $drill])
+        ->call('archive')
+        ->assertHasErrors('item')
+        ->assertNoRedirect();
+
+    assertNotSoftDeleted($drill);
 });

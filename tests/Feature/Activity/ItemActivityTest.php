@@ -6,6 +6,7 @@ use App\Enums\ActivityType;
 use App\Livewire\Archived\Index;
 use App\Livewire\Items\Create;
 use App\Livewire\Items\Edit;
+use App\Livewire\Items\Lend;
 use App\Livewire\Items\Show;
 use App\Livewire\Places;
 use App\Models\Activity;
@@ -74,6 +75,24 @@ test('moving an item records an entry with the old and the new path', function (
         'subject_name' => 'Kettle',
         'from_value' => 'Kitchen › Left cupboard',
         'to_value' => 'Hall',
+    ]);
+});
+
+test('lending an item records an entry with the borrower', function (): void {
+    $household = Household::factory()->create();
+    $drill = itemIn(placeIn($household, 'Storage room'), 'Drill');
+
+    Livewire::actingAs($household->owner)
+        ->test(Lend::class, ['household' => $household, 'item' => $drill])
+        ->set('borrowerName', 'Neighbor Reza')
+        ->call('lend');
+
+    assertDatabaseHas(Activity::class, [
+        'type' => ActivityType::ItemLent,
+        'item_id' => $drill->id,
+        'subject_name' => 'Drill',
+        'from_value' => null,
+        'to_value' => 'Neighbor Reza',
     ]);
 });
 

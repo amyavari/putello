@@ -5,12 +5,14 @@ declare(strict_types=1);
 use App\Enums\Role;
 use App\Livewire\Search\Index;
 use App\Models\Household;
+use App\Models\Loan;
 use App\Models\User;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\get;
+use function Pest\Laravel\travelTo;
 
 test('the search page renders for a member', function (): void {
     $household = Household::factory()->create();
@@ -47,6 +49,32 @@ test('a member finds an item by its name, with the path of its place', function 
         ->assertSee('Search items and places')
         ->set('search', 'keys')
         ->assertSeeHtmlInOrder(['Items', 'Spare house keys', 'Kitchen › Drawer 1']);
+});
+
+test('a lent item shows who has it and since when', function (): void {
+    travelTo('2026-11-16');
+    $household = Household::factory()->create();
+    $drill = itemIn(placeInside(placeIn($household, 'Storage room'), 'Shelf A'), 'Drill');
+    Loan::factory()
+        ->for($drill)
+        ->for(borrowerOf($household, 'Neighbor Reza'))
+        ->create(['lent_at' => '2026-11-03']);
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->set('search', 'drill')
+        ->assertSeeHtmlInOrder(['Drill', 'Storage room › Shelf A', 'Lent to Neighbor Reza · since Nov 3']);
+});
+
+test('an item that is not lent shows no loan', function (): void {
+    $household = Household::factory()->create();
+    itemIn(placeIn($household, 'Storage room'), 'Drill');
+
+    Livewire::actingAs($household->owner)
+        ->test(Index::class, ['household' => $household])
+        ->set('search', 'drill')
+        ->assertSee('Drill')
+        ->assertDontSee('Lent to');
 });
 
 test('a member finds an item by its notes', function (): void {

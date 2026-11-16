@@ -10,6 +10,7 @@ use App\Models\Place;
 use App\Models\User;
 use App\Support\PlaceTree;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final readonly class ArchiveItemAction
 {
@@ -21,6 +22,8 @@ final readonly class ArchiveItemAction
     public function handle(User $user, Item $item): Place
     {
         return DB::transaction(function () use ($user, $item): Place {
+            $this->ensureItemIsNotLent($item);
+
             $oldPlace = $item->place;
             $oldPath = PlaceTree::for($item->household)->pathOf($oldPlace);
 
@@ -34,5 +37,14 @@ final readonly class ArchiveItemAction
 
             return $oldPlace;
         });
+    }
+
+    private function ensureItemIsNotLent(Item $item): void
+    {
+        if ($item->isLent()) {
+            throw ValidationException::withMessages([
+                'item' => __('loans.close_loan_first'),
+            ]);
+        }
     }
 }

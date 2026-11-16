@@ -1,3 +1,5 @@
+@use('App\Support\ShortDate')
+
 <x-page>
     <x-flash-message :$message />
 
@@ -11,6 +13,12 @@
                 <flux:button variant="primary">{{ __('items.move') }}</flux:button>
             </flux:modal.trigger>
 
+            @unless ($item->isLent())
+                <x-button.secondary :href="route('items.lend', [$household, $item])" wire:navigate>
+                    {{ __('loans.lend') }}
+                </x-button.secondary>
+            @endunless
+
             <x-items.more-actions :$household :$item />
         </div>
     @endcan
@@ -19,6 +27,22 @@
 
     <flux:card class="mt-2">
         <x-items.place-path :$household :places="$this->path" />
+    </flux:card>
+
+    <x-page.section-heading class="mt-6">{{ __('loans.loan') }}</x-page.section-heading>
+
+    <flux:card class="mt-2">
+        @if ($item->currentLoan === null)
+            <p class="text-ink-muted">{{ __('loans.not_lent') }}</p>
+        @else
+            <div class="flex flex-col items-start gap-1">
+                <x-loans.badge :loan="$item->currentLoan" />
+
+                @if ($item->currentLoan->due_at !== null)
+                    <p class="text-sm text-ink-muted">{{ __('loans.due', ['date' => ShortDate::of($item->currentLoan->due_at)]) }}</p>
+                @endif
+            </div>
+        @endif
     </flux:card>
 
     <x-page.section-heading class="mt-6">{{ __('items.notes') }}</x-page.section-heading>

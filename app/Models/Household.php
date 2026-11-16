@@ -59,6 +59,14 @@ final class Household extends Model
     }
 
     /**
+     * @return HasMany<Borrower, $this>
+     */
+    public function borrowers(): HasMany
+    {
+        return $this->hasMany(Borrower::class);
+    }
+
+    /**
      * @return HasMany<Activity, $this>
      */
     public function activities(): HasMany

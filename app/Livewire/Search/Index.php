@@ -50,7 +50,7 @@ final class Index extends Component
             ->where(fn (Builder $query): Builder => $query
                 ->whereLike('name', $pattern)
                 ->orWhereLike('notes', $pattern))
-            ->with('place')
+            ->with(['place', 'currentLoan.borrower'])
             ->orderBy('name')
             ->get();
     }
