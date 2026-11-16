@@ -1,51 +1,31 @@
-<section class="w-full max-w-3xl">
+<x-page>
     <x-flash-message :$message />
 
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->path" />
 
-    <flux:heading size="xl" level="1" class="mt-2">{{ $item->name }}</flux:heading>
+    <x-page.title class="mt-1">{{ $item->name }}</x-page.title>
 
     @can('edit', $household)
-        <div class="mt-4 flex items-center gap-3">
+        <div class="mt-6 flex items-center gap-3">
             <flux:modal.trigger name="move-item">
-                <flux:button variant="primary" icon="arrows-right-left">{{ __('items.move') }}</flux:button>
+                <flux:button variant="primary">{{ __('items.move') }}</flux:button>
             </flux:modal.trigger>
 
-            <flux:dropdown position="bottom" align="start">
-                <flux:button icon="ellipsis-horizontal" square :aria-label="__('items.more_actions')" />
-
-                <flux:menu>
-                    <flux:menu.item :href="route('items.edit', [$household, $item])" wire:navigate icon="pencil-square">
-                        {{ __('items.edit') }}
-                    </flux:menu.item>
-
-                    <flux:menu.separator />
-
-                    <flux:menu.item wire:click="archive" icon="archive-box" variant="danger" class="text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-current!">
-                        {{ __('items.archive') }}
-                    </flux:menu.item>
-                </flux:menu>
-            </flux:dropdown>
+            <x-items.more-actions :$household :$item />
         </div>
     @endcan
 
-    <flux:heading size="lg" level="2" class="mt-6">{{ __('items.place') }}</flux:heading>
+    <x-page.section-heading class="mt-6">{{ __('items.place') }}</x-page.section-heading>
 
     <flux:card class="mt-2">
-        @foreach ($this->path as $place)
-            @unless ($loop->first)
-                <span aria-hidden="true" class="text-zinc-500">›</span>
-            @endunless
-
-            <flux:link :href="route('places.show', [$household, $place])" wire:navigate wire:key="path-{{ $place->id }}">{{ $place->name }}</flux:link>
-        @endforeach
+        <x-items.place-path :$household :places="$this->path" />
     </flux:card>
 
-    <flux:heading size="lg" level="2" class="mt-6">{{ __('items.notes') }}</flux:heading>
+    <x-page.section-heading class="mt-6">{{ __('items.notes') }}</x-page.section-heading>
 
     <flux:card class="mt-2">
         @if ($item->notes === null)
-            <flux:text>{{ __('items.no_notes') }}</flux:text>
+            <p class="text-ink-muted">{{ __('items.no_notes') }}</p>
         @else
             <p>{{ $item->notes }}</p>
         @endif
@@ -60,4 +40,4 @@
             </div>
         </flux:modal>
     @endcan
-</section>
+</x-page>

@@ -1,40 +1,23 @@
-<section class="w-full max-w-xl">
+<x-page>
     <x-places.breadcrumbs :$household :household-name="$this->householdName" :places="$this->path" />
 
-    <flux:heading size="xl" level="1" class="mt-2">{{ __('items.add') }}</flux:heading>
+    <x-page.title class="mt-1">{{ __('items.add') }}</x-page.title>
 
-    <form wire:submit="add" class="mt-6 space-y-6">
-        <flux:input wire:model="name" :label="__('items.name')" autocomplete="off" />
+    <flux:card class="mt-6">
+        <form wire:submit="add" class="space-y-4">
+            <x-items.fields />
 
-        <flux:textarea
-            wire:model="notes"
-            :label="__('items.notes_optional')"
-            :description="__('items.notes_hint')"
-            rows="3"
-        />
+            <x-form.place-field :label="__('items.place')" :place-name="$place->name" />
 
-        <div>
-            <flux:text>{{ __('items.place') }}</flux:text>
+            <x-form.actions>
+                <flux:button type="submit" variant="primary" icon="plus">{{ __('items.add') }}</flux:button>
 
-            <div class="mt-1 flex items-center justify-between gap-3">
-                <flux:heading>{{ $place->name }}</flux:heading>
-
-                <flux:modal.trigger name="choose-place">
-                    <flux:button size="sm" variant="ghost">{{ __('places.change_place') }}</flux:button>
-                </flux:modal.trigger>
-            </div>
-
-            <flux:error name="placeId" />
-        </div>
-
-        <div class="flex gap-3">
-            <flux:button type="submit" variant="primary" icon="plus" class="flex-[7]">{{ __('items.add') }}</flux:button>
-
-            <flux:button :href="route('places.show', [$household, $place])" wire:navigate variant="ghost" class="flex-[3]">
-                {{ __('items.cancel') }}
-            </flux:button>
-        </div>
-    </form>
+                <flux:button :href="route('places.show', [$household, $place])" wire:navigate variant="ghost">
+                    {{ __('items.cancel') }}
+                </flux:button>
+            </x-form.actions>
+        </form>
+    </flux:card>
 
     <flux:modal name="choose-place" class="w-full md:w-[30rem]">
         <livewire:places.picker
@@ -45,4 +28,4 @@
             lazy
         />
     </flux:modal>
-</section>
+</x-page>
