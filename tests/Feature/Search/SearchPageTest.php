@@ -136,6 +136,53 @@ test('a search that finds nothing says so', function (): void {
         ->assertSee('Check the spelling, or add it as a new item.');
 });
 
+test('the owner and editors see the add item button', function (Role $role): void {
+    $household = Household::factory()->create();
+    $member = memberOf($household, $role);
+
+    Livewire::actingAs($member)
+        ->test(Index::class, ['household' => $household])
+        ->assertSee('Add item')
+        ->assertSeeHtml(sprintf('href="%s"', e(route('items.create', $household))));
+})->with([
+    'owner' => ['role' => Role::Owner],
+    'editor' => ['role' => Role::Editor],
+]);
+
+test('a viewer does not see the add item button', function (): void {
+    $household = Household::factory()->create();
+    $viewer = memberOf($household, Role::Viewer);
+
+    Livewire::actingAs($viewer)
+        ->test(Index::class, ['household' => $household])
+        ->assertDontSee('Add item');
+});
+
+test('a search that finds nothing offers to add the item with that name', function (Role $role): void {
+    $household = Household::factory()->create();
+    $member = memberOf($household, $role);
+
+    Livewire::actingAs($member)
+        ->test(Index::class, ['household' => $household])
+        ->set('search', 'umbrella')
+        ->assertSee('Add “umbrella”')
+        ->assertSeeHtml(sprintf('href="%s"', e(route('items.create', [$household, 'name' => 'umbrella']))));
+})->with([
+    'owner' => ['role' => Role::Owner],
+    'editor' => ['role' => Role::Editor],
+]);
+
+test('a viewer is not offered to add the item that was not found', function (): void {
+    $household = Household::factory()->create();
+    $viewer = memberOf($household, Role::Viewer);
+
+    Livewire::actingAs($viewer)
+        ->test(Index::class, ['household' => $household])
+        ->set('search', 'umbrella')
+        ->assertSee('Nothing found for “umbrella”')
+        ->assertDontSee('Add “umbrella”');
+});
+
 test('a user who is not a member gets a not found page', function (): void {
     $household = Household::factory()->create();
     actingAs(User::factory()->create());

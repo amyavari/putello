@@ -7,12 +7,12 @@
         <form wire:submit="add" class="space-y-4">
             <x-items.fields />
 
-            <x-form.place-field :label="__('items.place')" :place-name="$place->name" />
+            <x-form.place-field :label="__('items.place')" :place-name="$place?->name" />
 
             <x-form.actions>
                 <flux:button type="submit" variant="primary" icon="plus">{{ __('items.add') }}</flux:button>
 
-                <flux:button :href="route('places.show', [$household, $place])" wire:navigate variant="ghost">
+                <flux:button :href="$place ? route('places.show', [$household, $place]) : route('search.index', $household)" wire:navigate variant="ghost">
                     {{ __('items.cancel') }}
                 </flux:button>
             </x-form.actions>
@@ -22,9 +22,9 @@
     <flux:modal name="choose-place" class="w-full md:w-[30rem]">
         <livewire:places.picker
             :$household
-            :chosen-place-id="$place->id"
+            :chosen-place-id="$place?->id"
             is-for-an-item
-            :key="'picker-'.$place->id"
+            :key="'picker-'.($place?->id ?? 'none')"
             lazy
         />
     </flux:modal>

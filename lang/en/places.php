@@ -47,6 +47,7 @@ return [
     'choose_a_place' => 'Choose a place',
     'choose' => 'Choose',
     'change_place' => 'Change place',
+    'choose_place' => 'Choose place',
     'moved' => ':name moved. It is now in :place.',
     'cannot_choose_place' => 'This place can’t be chosen. Choose another place.',
     'cannot_move_there' => ':name can’t be moved there. Choose another place.',

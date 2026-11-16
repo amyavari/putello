@@ -154,6 +154,69 @@ test('a place of another household can not be chosen', function (): void {
         ->assertSet('place.id', $room->id);
 });
 
+test('the add item page opens without a place', function (): void {
+    $household = Household::factory()->create();
+    actingAs($household->owner);
+
+    get(route('items.create', $household))
+        ->assertOk();
+});
+
+test('without a place the form offers to choose one', function (): void {
+    $household = Household::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->assertSeeInOrder(['Place', 'Choose place']);
+});
+
+test('the owner adds an item to the place chosen when the page opened without a place', function (): void {
+    $household = Household::factory()->create();
+    $kitchen = placeIn($household, 'Kitchen');
+
+    Livewire::actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->call('useChosenPlace', $kitchen->id)
+        ->set('name', 'Kettle')
+        ->call('add')
+        ->assertHasNoErrors();
+
+    assertDatabaseHas(Item::class, [
+        'place_id' => $kitchen->id,
+        'name' => 'Kettle',
+    ]);
+});
+
+test('the place is required', function (): void {
+    $household = Household::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->set('name', 'Kettle')
+        ->call('add')
+        ->assertHasErrors('placeId')
+        ->assertSee('Choose a place for the item.');
+
+    assertDatabaseEmpty(Item::class);
+});
+
+test('the name can be filled in from the url', function (): void {
+    $household = Household::factory()->create();
+
+    Livewire::withQueryParams(['name' => 'Umbrella'])
+        ->actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->assertSet('name', 'Umbrella');
+});
+
+test('without a place cancel goes back to search', function (): void {
+    $household = Household::factory()->create();
+
+    Livewire::actingAs($household->owner)
+        ->test(Create::class, ['household' => $household])
+        ->assertSeeHtml(sprintf('href="%s"', route('search.index', $household)));
+});
+
 test('after adding an item the app opens it with a message', function (): void {
     $household = Household::factory()->create();
     $room = placeIn($household, 'John’s room');
@@ -244,14 +307,6 @@ test('the notes can not be longer than 255 characters', function (): void {
         ->assertHasErrors(['notes' => 'max']);
 
     assertDatabaseEmpty(Item::class);
-});
-
-test('the add item page needs a place', function (): void {
-    $household = Household::factory()->create();
-    actingAs($household->owner);
-
-    get(route('items.create', $household))
-        ->assertNotFound();
 });
 
 test('a place of another household can not be the place of a new item', function (): void {

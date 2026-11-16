@@ -10,5 +10,6 @@ return [
     'places' => 'Places',
     'nothing_found' => 'Nothing found for “:search”',
     'nothing_found_hint' => 'Check the spelling, or add it as a new item.',
+    'add_named_item' => 'Add “:name”',
     'loading' => 'Loading results',
 ];

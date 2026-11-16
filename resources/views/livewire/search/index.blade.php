@@ -2,6 +2,12 @@
     <div class="space-y-2">
         <div class="flex min-h-11 items-center justify-between gap-3">
             <label for="search" class="text-[0.9375rem]/5 font-medium">{{ __('search.label') }}</label>
+
+            @can('edit', $household)
+                <flux:button :href="route('items.create', $household)" wire:navigate variant="primary" icon="plus">
+                    {{ __('items.add') }}
+                </flux:button>
+            @endcan
         </div>
 
         <flux:input
@@ -64,6 +70,12 @@
             <flux:card class="mt-6 py-12 text-center">
                 <p class="font-semibold">{{ __('search.nothing_found', ['search' => $search]) }}</p>
                 <p class="mt-1 text-sm text-ink-muted">{{ __('search.nothing_found_hint') }}</p>
+
+                @can('edit', $household)
+                    <x-button.secondary :href="route('items.create', [$household, 'name' => $search])" wire:navigate icon="plus" class="mt-4">
+                        {{ __('search.add_named_item', ['name' => $search]) }}
+                    </x-button.secondary>
+                @endcan
             </flux:card>
         @endif
     </div>
