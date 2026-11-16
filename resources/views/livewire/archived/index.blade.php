@@ -26,9 +26,9 @@
                     </div>
 
                     @can('edit', $household)
-                        <flux:button wire:click="chooseItemToRestore('{{ $item->id }}')" variant="filled" size="sm">
+                        <x-button.secondary wire:click="chooseItemToRestore('{{ $item->id }}')" size="sm">
                             {{ __('archived.restore') }}
-                        </flux:button>
+                        </x-button.secondary>
                     @endcan
                 </flux:card>
             @endforeach

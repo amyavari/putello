@@ -75,9 +75,9 @@
         <flux:heading size="lg" level="2">{{ __('places.places_inside') }}</flux:heading>
 
         @can('edit', $household)
-            <flux:button :href="route('places.create', [$household, 'inside' => $place])" wire:navigate variant="filled" icon="plus">
+            <x-button.secondary :href="route('places.create', [$household, 'inside' => $place])" wire:navigate icon="plus">
                 {{ __('places.add') }}
-            </flux:button>
+            </x-button.secondary>
         @endcan
     </div>
 
