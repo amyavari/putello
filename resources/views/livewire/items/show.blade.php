@@ -11,6 +11,12 @@
                 <flux:button variant="primary">{{ __('items.move') }}</flux:button>
             </flux:modal.trigger>
 
+            @unless ($item->isLent())
+                <x-button.secondary :href="route('items.lend', [$household, $item])" wire:navigate>
+                    {{ __('loans.lend') }}
+                </x-button.secondary>
+            @endunless
+
             <x-items.more-actions :$household :$item />
         </div>
     @endcan
