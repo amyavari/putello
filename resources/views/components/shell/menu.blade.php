@@ -1,8 +1,17 @@
 @props(['household'])
 
-{{-- The sections of the household of the page, a divider, then all the households. --}}
+{{-- Search and the sections of the household of the page, a divider, then all the households. --}}
 <flux:sidebar.nav :aria-label="__('shell.main_menu')">
     @if ($household)
+        <flux:sidebar.item
+            icon="magnifying-glass"
+            :href="route('search.index', $household)"
+            :current="request()->routeIs('search.*')"
+            wire:navigate
+        >
+            {{ __('search.title') }}
+        </flux:sidebar.item>
+
         <flux:sidebar.item
             icon="squares-2x2"
             :href="route('places.index', $household)"

@@ -7,6 +7,7 @@ use App\Livewire\Archived;
 use App\Livewire\Households;
 use App\Livewire\Items;
 use App\Livewire\Places;
+use App\Livewire\Search;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -18,6 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         ->can('view', 'household')
         ->middleware(SaveCurrentHousehold::class)
         ->group(function (): void {
+            Route::livewire('search', Search\Index::class)->name('search.index');
             Route::livewire('places', Places\Index::class)->name('places.index');
             Route::livewire('places/create', Places\Create::class)->name('places.create');
             Route::livewire('places/{place}', Places\Show::class)

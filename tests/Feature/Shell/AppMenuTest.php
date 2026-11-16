@@ -34,6 +34,17 @@ test('the menu shows that a viewer is a viewer', function (): void {
         ->assertSee('Home · Viewer');
 });
 
+test('the menu links to the search of the household, before its places', function (): void {
+    $household = Household::factory()->create();
+    actingAs($household->owner);
+
+    get(route('places.index', $household))
+        ->assertSeeHtmlInOrder([
+            sprintf('href="%s"', route('search.index', $household)),
+            sprintf('href="%s"', route('places.index', $household)),
+        ]);
+});
+
 test('the menu links to the places of the household', function (): void {
     $household = Household::factory()->create();
     actingAs($household->owner);
@@ -73,6 +84,34 @@ test('the mobile header shows the app name and the household', function (): void
 
     get(route('places.index', $household))
         ->assertSeeHtmlInOrder(['data-test="mobile-header-title"', 'Putello', '– Home']);
+});
+
+test('the mobile header has a search button on a household page', function (): void {
+    $household = Household::factory()->create();
+    actingAs($household->owner);
+
+    get(route('places.index', $household))
+        ->assertSeeHtmlInOrder(['data-test="mobile-header-title"', 'aria-label="Search"'])
+        ->assertSeeHtmlInOrder([
+            'data-test="mobile-header-title"',
+            sprintf('href="%s"', route('search.index', $household)),
+        ]);
+});
+
+test('the mobile header has no search button on the search page', function (): void {
+    $household = Household::factory()->create();
+    actingAs($household->owner);
+
+    get(route('search.index', $household))
+        ->assertDontSeeHtml('aria-label="Search"');
+});
+
+test('the mobile header has no search button on a page without a household', function (): void {
+    $household = Household::factory()->create();
+    actingAs($household->owner);
+
+    get(route('profile.edit'))
+        ->assertDontSeeHtml('aria-label="Search"');
 });
 
 test('the starter links are gone', function (): void {
