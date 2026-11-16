@@ -9,6 +9,8 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-bg text-ink">
+        <x-shell.skip-link />
+
         <flux:sidebar sticky collapsible="mobile" class="w-64 border-e border-border bg-bg-subtle">
             <flux:sidebar.header>
                 <x-shell.brand :$household />
